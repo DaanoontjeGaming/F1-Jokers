@@ -5,8 +5,14 @@
 
 <section class="race-info text-center mb-4">
     <h1>@Model.RaceNaam</h1>
+    
+    <div class="race-tabs btn-group mb-3">
+        <button type="button" class="btn-tab active" onclick="switchRace('main-race')">Hoofdrace</button>
+        <button type="button" class="btn-tab" onclick="switchRace('sprint-race')">Sprintrace</button>
+    </div>
+
     <div class="deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold">
-        Deadline: 01/05/2026 - 15:00 (Kwalificatie)
+        Deadline: 01/05/2026 - 15:00
     </div>
 </section>
 
@@ -27,22 +33,20 @@
         </ul>
     </section>
 
-    <section class="column">
-        <h2 class="column-title">Jouw Top 10</h2>
+    <section class="column race-section" id="main-race">
+        <h2 class="column-title">Jouw Top 10 (Race)</h2>
         <div class="drop-zones">
             @for (int i = 1; i <= 10; i++)
             {
                 <div class="slot d-flex mb-2">
                     <span class="pos-num">@i</span>
-                    <div class="drop-target" id="pos@i" ondrop="drop(event)" ondragover="allowDrop(event)">Sleep hier...</div>
+                    <div class="drop-target" id="race-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)">Sleep hier...</div>
                 </div>
             }
         </div>
-
-        <div class="bonus-section mt-4">
-            <h3>Extra</h3>
-    
-            <div class="mb-3">
+        <div class="bonus-section mt-3">
+            <h3>Bonus Race</h3>
+            <div class="mb-2">
                 <label class="d-block text-danger small fw-bold">Pole Position</label>
                 <select class="form-select bg-dark text-white border-secondary">
                     <option>Kies coureur...</option>
@@ -50,9 +54,32 @@
                     <option>Lando Norris</option>
                 </select>
             </div>
-
-            <div class="mb-3">
+            <div class="mb-2">
                 <label class="d-block text-danger small fw-bold">Snelste Ronde</label>
+                <select class="form-select bg-dark text-white border-secondary">
+                    <option>Kies coureuer...</option>
+                    <option>Max Verstappen</option>
+                    <option>Lando Norris</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <section class="column race-section d-none" id="sprint-race">
+        <h2 class="column-title">Jouw Top 5 (Sprint)</h2>
+        <div class="drop-zones">
+            @for (int i = 1; i <= 5; i++)
+            {
+                <div class="slot d-flex mb-2">
+                    <span class="pos-num">@i</span>
+                    <div class="drop-target" id="sprint-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)">Sleep hier...</div>
+                </div>
+            }
+        </div>
+        <div class="bonus-section mt-3">
+            <h3>Bonus Sprint</h3>
+            <div class="mb-2">
+                <label class="d-block text-danger small fw-bold">Pole Position</label>
                 <select class="form-select bg-dark text-white border-secondary">
                     <option>Kies coureur...</option>
                     <option>Max Verstappen</option>

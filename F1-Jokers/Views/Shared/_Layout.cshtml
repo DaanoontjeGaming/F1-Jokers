@@ -12,46 +12,39 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mobile-bottom-nav">
-            <div class="container-fluid">
-
-                <img src="~/images/F1Jokers.png" alt="F1-Jokers Logo" class="app-logo" />
-
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1 list-unstyled">
+        <nav class="navbar mobile-bottom-nav">
+            <div class="container-fluid flex-nowrap">
+                <img src="~/images/F1Jokers.png" alt="F1-Jokers Logo" class="fixed-app-logo" />
+                <div class="custom-nav-container">
+                    <ul class="navbar-nav list-unstyled">
                         <li class="nav-item">
-                            <a class="nav-link text-center d-flex flex-column align-items-center" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-house-door fs-2"></i>
-                                <span class="small">Home</span>
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i>
+                                <span>Home</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-center d-flex flex-column align-items-center" asp-controller="Voorspelling" asp-action="Index">
-                                <i class="bi bi-gear-wide-connected fs-2"></i>
-                                <span class="small">Voorspellen</span>
+                            <a class="nav-link" asp-controller="Voorspelling" asp-action="Index">
+                                <i class="bi bi-gear-wide-connected"></i>
+                                <span>Voorspellen</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-center d-flex flex-column align-items-center" asp-controller="Stand" asp-action="Index">
-                                <i class="bi bi-trophy fs-2"></i>
-                                <span class="small">Stand</span>
+                            <a class="nav-link" asp-controller="Stand" asp-action="Index">
+                                <i class="bi bi-trophy"></i>
+                                <span>Stand</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-center d-flex flex-column align-items-center" asp-controller="Uitslag" asp-action="Index">
-                                <i class="bi bi-flag fs-2"></i>
-                                <span class="small">Uitslagen</span>
+                            <a class="nav-link" asp-controller="Uitslag" asp-action="Index">
+                                <i class="bi bi-flag"></i>
+                                <span>Uitslagen</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-center d-flex flex-column align-items-center" asp-controller="Profiel" asp-action="Index">
-                                <i class="bi bi-person-circle fs-2"></i>
-                                <span class="small">Profiel</span>
+                            <a class="nav-link" asp-controller="Profiel" asp-action="Index">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Profiel</span>
                             </a>
                         </li>
                     </ul>
@@ -65,7 +58,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer">
         <div class="container">
             &copy; 2026 - F1-Jokers - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
