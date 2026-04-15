@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("F1Jokers")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8f4b07e03a7824597e15a717b7a9e76a6dc6eb8a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ddb618ac4c4b35884bdc2b4380fb08bdbf720333")]
 [assembly: System.Reflection.AssemblyProductAttribute("F1Jokers")]
 [assembly: System.Reflection.AssemblyTitleAttribute("F1Jokers")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
