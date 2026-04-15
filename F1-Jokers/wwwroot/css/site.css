@@ -26,7 +26,7 @@ body {
     font-family: 'Titillium Web', sans-serif;
 }
 
-/* Footer styling */
+/* Footer styling - Geen text-decoration en wit */
 footer.border-top.footer,
 footer.footer,
 footer .container {
@@ -37,12 +37,11 @@ footer .container {
 
 footer a {
     color: var(--f1-white) !important;
-    text-decoration: none;
+    text-decoration: none !important;
 }
 
     footer a:hover {
         color: var(--f1-red) !important;
-        text-decoration: underline;
     }
 
 /* Algemene Navigatie */
@@ -57,7 +56,7 @@ img.app-logo {
     margin-right: 15px;
 }
 
-/* Fix voor lijstpuntjes en onderstreping */
+/* Fix voor lijstpuntjes en onderstreping in Nav */
 header nav.navbar .navbar-nav {
     list-style: none !important;
     padding: 0 !important;
@@ -74,7 +73,7 @@ header nav.navbar .navbar-nav {
     }
 
         header nav.navbar .navbar-nav .nav-link i {
-            font-size: 1.8rem; /* Grotere icoontjes */
+            font-size: 1.8rem;
             line-height: 1;
             margin-bottom: 2px;
             color: inherit;
@@ -113,18 +112,9 @@ header nav.navbar .navbar-nav {
         border-bottom: none;
     }
 
-        header nav.navbar.mobile-bottom-nav img.app-logo {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1050;
-        }
-
         header nav.navbar.mobile-bottom-nav .container-fluid {
             display: flex !important;
             flex-direction: row !important;
-            flex-wrap: nowrap !important;
-            align-items: center !important;
             justify-content: center !important;
         }
 
@@ -134,8 +124,6 @@ header nav.navbar .navbar-nav {
 
         header nav.navbar.mobile-bottom-nav .navbar-collapse.collapse {
             display: flex !important;
-            flex-basis: auto !important;
-            flex-grow: 1 !important;
         }
 
         header nav.navbar.mobile-bottom-nav ul.navbar-nav {
@@ -152,7 +140,6 @@ header nav.navbar .navbar-nav {
     grid-template-columns: 1fr 1fr;
     gap: 15px;
     margin: 15px 0;
-    align-items: start;
 }
 
 .column {
@@ -220,7 +207,6 @@ header nav.navbar .navbar-nav {
     align-items: center;
     padding-left: 10px;
     color: #888;
-    font-style: italic;
     font-size: 0.8rem;
 }
 
