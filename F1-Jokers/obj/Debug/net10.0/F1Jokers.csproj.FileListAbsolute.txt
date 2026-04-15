@@ -94,5 +94,5 @@ C:\Users\Daan\Desktop\Windesheim\Web Dev\F1-Jokers Showcase\F1-Jokers\F1-Jokers\
 C:\Users\Daan\Desktop\Windesheim\Web Dev\F1-Jokers Showcase\F1-Jokers\F1-Jokers\obj\Debug\net10.0\compressed\xr0twllinj-{0}-m9qm4tazc0-m9qm4tazc0.gz
 C:\Users\Daan\Desktop\Windesheim\Web Dev\F1-Jokers Showcase\F1-Jokers\F1-Jokers\obj\Debug\net10.0\compressed\53gp9u16gu-{0}-jjsuc0puko-jjsuc0puko.gz
 C:\Users\Daan\Desktop\Windesheim\Web Dev\F1-Jokers Showcase\F1-Jokers\F1-Jokers\obj\Debug\net10.0\compressed\rwsiwyockh-{0}-9vr69e8ynj-9vr69e8ynj.gz
-C:\Users\Daan\Desktop\Windesheim\Web Dev\F1-Jokers Showcase\F1-Jokers\F1-Jokers\obj\Debug\net10.0\compressed\zot3djtupw-{0}-1mzh5wl3ok-1mzh5wl3ok.gz
-C:\Users\Daan\Desktop\Windesheim\Web Dev\F1-Jokers Showcase\F1-Jokers\F1-Jokers\obj\Debug\net10.0\compressed\whqvjiyh2d-{0}-0l63fzxda6-0l63fzxda6.gz
+C:\Users\Daan\Desktop\Windesheim\Web Dev\F1-Jokers Showcase\F1-Jokers\F1-Jokers\obj\Debug\net10.0\compressed\whqvjiyh2d-{0}-0ajlsarco3-0ajlsarco3.gz
+C:\Users\Daan\Desktop\Windesheim\Web Dev\F1-Jokers Showcase\F1-Jokers\F1-Jokers\obj\Debug\net10.0\compressed\zot3djtupw-{0}-9nz7d34nfw-9nz7d34nfw.gz

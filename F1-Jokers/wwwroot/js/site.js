@@ -13,59 +13,77 @@ function drop(ev) {
     const draggedElement = document.getElementById(data);
     const target = ev.target;
     const dropZone = target.closest(".drop-target");
-    const pool = target.closest("#pool");
+    const pool = target.closest(".driver-list");
 
-    /* Terugslepen naar de pool */
     if (pool && data.startsWith("clone-")) {
         const originalId = data.split('-')[1];
         const originalElement = document.getElementById(originalId);
         if (originalElement) {
             originalElement.style.display = "flex";
         }
-        draggedElement.parentNode.classList.remove("filled");
-        draggedElement.parentNode.innerHTML = "Sleep hier...";
+        const parentZone = draggedElement.parentNode;
+        parentZone.classList.remove("filled");
+        parentZone.innerHTML = "...";
         return;
     }
 
-    /* Slepen naar een vakje */
     if (dropZone) {
-        const activeSection = dropZone.closest(".race-section");
-        const isSprint = activeSection && activeSection.id === "sprint-race";
-
-        /* Als we een bestaande clone verplaatsen */
         if (data.startsWith("clone-")) {
+            const oldParent = draggedElement.parentNode;
+            oldParent.innerHTML = "...";
+            oldParent.classList.remove("filled");
             dropZone.innerHTML = "";
             dropZone.appendChild(draggedElement);
         }
-        /* Als we een nieuwe coureur uit de lijst trekken */
         else {
             const clone = draggedElement.cloneNode(true);
             clone.id = "clone-" + data + "-" + dropZone.id;
             clone.setAttribute("ondragstart", "drag(event)");
-
             dropZone.innerHTML = "";
             dropZone.appendChild(clone);
             draggedElement.style.display = "none";
         }
-
         dropZone.classList.add("filled");
     }
 }
 
-/* --- RACE SWITCHER LOGICA --- */
-function switchRace(raceType) {
-    const mainRace = document.getElementById('main-race');
-    const sprintRace = document.getElementById('sprint-race');
-    const driverCards = document.querySelectorAll('#pool .driver-card');
+/* --- VIEW SWITCHER LOGICA --- */
+function switchView(viewId) {
+    const sections = document.querySelectorAll('.race-section');
+    const allCards = document.querySelectorAll('.driver-card');
+    const driverPool = document.getElementById('pool-drivers-wrapper');
+    const teamPool = document.getElementById('pool-teams-wrapper');
+    const deadlineText = document.getElementById('deadline-text');
+    const deadlineBadge = document.getElementById('deadline-status');
 
-    mainRace.classList.add('d-none');
-    sprintRace.classList.add('d-none');
+    const raceDeadline = "Deadline Race: 01/05/2026 - 15:00";
+    const seasonDeadline = "Deadline Seizoen: Start Q1 Australië (13/03/2026 - 07:00)";
 
-    const activeSection = document.getElementById(raceType);
+    if (viewId.startsWith('season')) {
+        deadlineText.innerText = seasonDeadline;
+        deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-warning text-warning fw-bold";
+        if (viewId === 'season-teams') {
+            driverPool.classList.add('d-none');
+            teamPool.classList.remove('d-none');
+        } else {
+            driverPool.classList.remove('d-none');
+            teamPool.classList.add('d-none');
+        }
+    } else {
+        deadlineText.innerText = raceDeadline;
+        deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold";
+        driverPool.classList.remove('d-none');
+        teamPool.classList.add('d-none');
+    }
+
+    sections.forEach(sec => sec.classList.add('d-none'));
+    const activeSection = document.getElementById(viewId);
     activeSection.classList.remove('d-none');
 
-    driverCards.forEach(card => {
-        card.style.display = "flex";
+    allCards.forEach(card => {
+        if (!card.id.startsWith('clone-')) {
+            card.style.display = "flex";
+        }
     });
 
     const filledSlots = activeSection.querySelectorAll('.drop-target.filled .driver-card');
@@ -79,10 +97,6 @@ function switchRace(raceType) {
 
     const buttons = document.querySelectorAll('.btn-tab');
     buttons.forEach(btn => btn.classList.remove('active'));
-
-    if (raceType === 'main-race') {
-        buttons[0].classList.add('active');
-    } else {
-        buttons[1].classList.add('active');
-    }
+    const clickedBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(viewId));
+    if (clickedBtn) clickedBtn.classList.add('active');
 }

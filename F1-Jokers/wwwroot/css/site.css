@@ -5,6 +5,8 @@
     --f1-white: #ffffff;
     --f1-border: #38383f;
     --f1-slot-bg: #2b2b35;
+    --f1-blue: #0042bb;
+    --f1-orange: #ff8700;
 }
 
 html {
@@ -26,55 +28,50 @@ body {
     z-index: 2000;
 }
 
+/* --- NAVIGATIE --- */
 header nav.navbar {
     background-color: var(--f1-dark-grey);
     border-bottom: 1px solid var(--f1-border);
     padding: 5px 15px;
     width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
 }
 
     header nav.navbar .custom-nav-container {
         display: flex;
-        flex-grow: 1;
+        width: 100%;
     }
 
     header nav.navbar .navbar-nav {
         display: flex;
         flex-direction: row;
-        width: 100%;
+        list-style: none;
         margin: 0;
         padding: 0;
-        list-style: none;
     }
 
-        header nav.navbar .navbar-nav .nav-item .nav-link {
-            color: var(--f1-white);
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 5px 15px;
-            transition: color 0.2s;
-        }
+.navbar-nav .nav-link {
+    color: var(--f1-white);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 15px;
+    transition: color 0.2s;
+}
 
-            header nav.navbar .navbar-nav .nav-item .nav-link i {
-                font-size: 1.6rem;
-                margin-bottom: 2px;
-            }
+    .navbar-nav .nav-link i {
+        font-size: 1.6rem;
+    }
 
-            header nav.navbar .navbar-nav .nav-item .nav-link span {
-                font-size: 0.7rem;
-                white-space: nowrap;
-            }
+    .navbar-nav .nav-link span {
+        font-size: 0.7rem;
+    }
 
-            header nav.navbar .navbar-nav .nav-item .nav-link:hover {
-                color: var(--f1-red);
-            }
+    .navbar-nav .nav-link:hover {
+        color: var(--f1-red);
+    }
 
+/* Desktop: Logo links, nav direct daarnaast */
 @media (min-width: 768px) {
     header nav.navbar {
         position: sticky;
@@ -82,27 +79,30 @@ header nav.navbar {
         z-index: 1030;
     }
 
-        header nav.navbar .custom-nav-container {
-            justify-content: flex-start;
+        header nav.navbar .container-fluid {
+            justify-content: flex-start !important;
         }
 
-        header nav.navbar .navbar-nav {
-            width: auto;
-        }
+    .fixed-app-logo {
+        position: static; /* Haal uit absolute positionering */
+        height: 45px;
+        margin-right: 20px;
+    }
 
-        header nav.navbar .fixed-app-logo {
-            height: 45px;
-            margin-right: 30px;
-        }
+    header nav.navbar .custom-nav-container {
+        justify-content: flex-start;
+        width: auto;
+    }
 }
 
+/* Mobiel: Logo linksboven fixed, nav gecentreerd onderaan */
 @media (max-width: 767.98px) {
     body {
         padding-bottom: 85px;
         padding-top: 60px;
     }
 
-    header nav.navbar .fixed-app-logo {
+    .fixed-app-logo {
         position: fixed;
         top: 15px;
         left: 15px;
@@ -119,15 +119,22 @@ header nav.navbar {
         border-bottom: none;
     }
 
-        header nav.navbar.mobile-bottom-nav .navbar-nav {
-            justify-content: space-around;
-        }
+    header nav.navbar .custom-nav-container {
+        justify-content: center;
+    }
+
+    .navbar-nav {
+        justify-content: space-around;
+        width: 100%;
+    }
 }
 
+/* --- TABS & CONTAINERS --- */
 .race-tabs {
     display: flex;
     justify-content: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .btn-tab {
@@ -144,6 +151,14 @@ header nav.navbar {
         background-color: var(--f1-red);
         border-color: var(--f1-red);
     }
+
+.text-warning {
+    color: var(--f1-orange);
+}
+
+.border-warning {
+    border-color: var(--f1-orange);
+}
 
 .prediction-container {
     display: grid;
@@ -166,14 +181,11 @@ header nav.navbar {
 }
 
 .d-none {
-    display: none;
+    display: none !important;
 }
 
-.driver-list {
-    min-height: 200px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.small-slot {
+    height: 40px;
 }
 
 .driver-card {
@@ -187,6 +199,10 @@ header nav.navbar {
     align-items: center;
 }
 
+.team-card {
+    border-left: 4px solid var(--f1-blue);
+}
+
 .dr-number {
     font-weight: bold;
     width: 30px;
@@ -197,13 +213,6 @@ header nav.navbar {
     flex-grow: 1;
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--f1-white);
-}
-
-.dr-team {
-    font-size: 0.7rem;
-    opacity: 0.6;
-    text-transform: uppercase;
 }
 
 .pos-num {
@@ -239,21 +248,10 @@ header nav.navbar {
         margin-bottom: 0;
     }
 
-body footer.footer,
-body footer.border-top,
-footer.footer .container {
+footer {
     padding: 20px 0;
     text-align: center;
     color: var(--f1-white);
     background-color: var(--f1-black);
     border-top: 1px solid var(--f1-border);
 }
-
-footer.footer a {
-    color: var(--f1-white);
-    text-decoration: underline;
-}
-
-    footer.footer a:hover {
-        color: var(--f1-red);
-    }
