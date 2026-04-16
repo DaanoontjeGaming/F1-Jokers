@@ -11,54 +11,36 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mobile-bottom-nav">
-            <div class="container-fluid">
+   <header>
+    <nav class="navbar mobile-bottom-nav">
+        <div class="container-fluid d-flex flex-nowrap position-relative">
+            
+            @* Check of we op de Account/Inloggen pagina zijn *@
+            @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Account")
+            {
+                <a asp-controller="Home" asp-action="Index" class="navbar-brand me-0" aria-label="Terug naar Home">
+                    <img src="~/images/F1Jokers.png" alt="F1-Jokers Logo" class="fixed-app-logo" />
+                </a>
+            }
+            else
+            {
+                <div class="navbar-brand me-0">
+                    <img src="~/images/F1Jokers.png" alt="F1-Jokers Logo" class="fixed-app-logo" />
+                </div>
+            }
 
-                <img src="~/images/F1Jokers.png" alt="F1-Jokers Logo" class="app-logo" />
-
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark text-center" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-house-door d-block fs-4"></i>
-                                <span class="small">Home</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark text-center" asp-controller="Voorspelling" asp-action="Index">
-                                <i class="bi bi-gear-wide-connected d-block fs-4"></i>
-                                <span class="small">Voorspellen</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark text-center" asp-controller="Stand" asp-action="Index">
-                                <i class="bi bi-trophy d-block fs-4"></i>
-                                <span class="small">Stand</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark text-center" asp-controller="Uitslag" asp-action="Index">
-                                <i class="bi bi-flag d-block fs-4"></i>
-                                <span class="small">Uitslagen</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark text-center" asp-controller="Profiel" asp-action="Index">
-                                <i class="bi bi-person-circle d-block fs-4"></i>
-                                <span class="small">Profiel</span>
-                            </a>
-                        </li>
+            @* Navigatie-items (alleen als we NIET op de inlogpagina zijn) *@
+            @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
+            {
+                <div class="custom-nav-container">
+                    <ul class="navbar-nav d-flex flex-row list-unstyled mb-0">
+                        @* ... je navigatie links ... *@
                     </ul>
                 </div>
-            </div>
-        </nav>
-    </header>
+            }
+        </div>
+    </nav>
+</header>
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()

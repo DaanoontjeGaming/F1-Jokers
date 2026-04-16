@@ -5,6 +5,8 @@
     --f1-white: #ffffff;
     --f1-border: #38383f;
     --f1-slot-bg: #2b2b35;
+    --f1-blue: #0042bb;
+    --f1-orange: #ff8700;
 }
 
 html {
@@ -13,67 +15,120 @@ html {
     min-height: 100%;
 }
 
-@media (min-width: 768px) {
-    html {
-        font-size: 16px;
-    }
-}
-
 body {
-    margin-bottom: 60px;
     background-color: var(--f1-black);
     color: var(--f1-white);
     font-family: 'Titillium Web', sans-serif;
+    margin: 0;
 }
 
-/* Footer styling */
-footer.border-top.footer.text-muted,
-footer.footer,
-footer .container,
-footer .container div,
-footer .container span {
-    color: var(--f1-white);
-    text-align: center;
-}
-
-footer a {
-    color: var(--f1-white);
-    text-decoration: none;
-}
-
-footer a:hover {
-    color: var(--f1-white);
-    text-decoration: underline;
+/* --- NAVIGATIE & LOGO --- */
+.fixed-app-logo {
+    height: 35px;
+    width: auto;
+    z-index: 2000;
+    transition: opacity 0.2s;
 }
 
 header nav.navbar {
     background-color: var(--f1-dark-grey);
-    margin-bottom: 1rem;
     border-bottom: 1px solid var(--f1-border);
+    padding: 5px 15px;
+    width: 100%;
 }
 
-img.app-logo {
-    max-height: 40px;
-    margin-right: 15px;
-}
-
-header nav.navbar .navbar-nav .nav-item .nav-link,
-header nav.navbar .navbar-nav .nav-item .nav-link span,
-header nav.navbar .navbar-nav .nav-item .nav-link i {
-    color: var(--f1-white) !important;
-}
-
-    header nav.navbar .navbar-nav .nav-item .nav-link:hover,
-    header nav.navbar .navbar-nav .nav-item .nav-link:hover span,
-    header nav.navbar .navbar-nav .nav-item .nav-link:hover i {
-        color: var(--f1-red) !important;
+    header nav.navbar .custom-nav-container {
+        display: flex;
+        width: 100%;
     }
 
+    header nav.navbar .navbar-nav {
+        display: flex;
+        flex-direction: row;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+.navbar-brand {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+    /* WCAG: Focus ring voor toetsenbordgebruikers */
+    .navbar-brand:focus, .nav-link:focus, .btn-tab:focus, .form-control:focus {
+        outline: 2px solid var(--f1-white);
+        outline-offset: 2px;
+    }
+
+.navbar-nav .nav-link {
+    color: var(--f1-white);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 15px;
+    transition: color 0.2s;
+}
+
+    .navbar-nav .nav-link i {
+        font-size: 1.6rem;
+    }
+
+    .navbar-nav .nav-link span {
+        font-size: 0.7rem;
+    }
+
+    .navbar-nav .nav-link:hover {
+        color: var(--f1-red);
+    }
+
+/* Desktop: Logo links, nav direct daarnaast */
+@media (min-width: 768px) {
+    header nav.navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+    }
+
+        header nav.navbar .container-fluid {
+            justify-content: flex-start !important;
+        }
+
+    .fixed-app-logo {
+        height: 45px;
+        margin-right: 20px;
+    }
+
+    a.navbar-brand:hover {
+        opacity: 0.8;
+        cursor: pointer;
+    }
+
+    div.navbar-brand {
+        cursor: default;
+    }
+
+    header nav.navbar .custom-nav-container {
+        justify-content: flex-start;
+        width: auto;
+    }
+}
+
+/* Mobiel: Logo linksboven fixed, nav gecentreerd onderaan */
 @media (max-width: 767.98px) {
     body {
-        margin-bottom: 0;
-        padding-bottom: 90px;
-        padding-top: 70px;
+        padding-bottom: 85px;
+        padding-top: 60px;
+    }
+
+    .fixed-app-logo {
+        position: fixed;
+        top: 15px;
+        left: 15px;
     }
 
     header nav.navbar.mobile-bottom-nav {
@@ -82,62 +137,64 @@ header nav.navbar .navbar-nav .nav-item .nav-link i {
         left: 0;
         right: 0;
         z-index: 1030;
-        margin-bottom: 0;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
         background-color: var(--f1-black);
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-        border-top: 1px solid var(--f1-border);
+        border-top: 2px solid var(--f1-border);
+        border-bottom: none;
     }
 
-        header nav.navbar.mobile-bottom-nav img.app-logo {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1050;
-        }
+    header nav.navbar .custom-nav-container {
+        justify-content: center;
+    }
 
-        header nav.navbar.mobile-bottom-nav .container-fluid {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            align-items: center;
-            padding-left: 5px;
-            padding-right: 5px;
-        }
-
-        header nav.navbar.mobile-bottom-nav button.navbar-toggler {
-            display: none;
-        }
-
-        header nav.navbar.mobile-bottom-nav div.navbar-collapse.collapse {
-            display: flex;
-            flex-direction: row;
-            flex-basis: auto;
-            flex-grow: 1;
-        }
-
-        header nav.navbar.mobile-bottom-nav ul.navbar-nav {
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-            justify-content: space-evenly;
-            margin: 0;
-            padding: 0;
-        }
-
-            header nav.navbar.mobile-bottom-nav ul.navbar-nav a.nav-link span {
-                font-size: 0.7rem;
-                display: block;
-            }
+    .navbar-nav {
+        justify-content: space-around;
+        width: 100%;
+    }
 }
 
+/* --- TABS & DEADLINE --- */
+.race-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-tab {
+    background-color: var(--f1-dark-grey);
+    color: var(--f1-white);
+    border: 1px solid var(--f1-border);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+    .btn-tab.active {
+        background-color: var(--f1-red);
+        border-color: var(--f1-red);
+    }
+
+.text-warning {
+    color: var(--f1-orange);
+}
+
+.border-warning {
+    border-color: var(--f1-orange);
+}
+
+/* --- CONTAINERS & LAYOUT --- */
 .prediction-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 15px;
-    margin: 15px 0;
-    align-items: start;
+    margin-top: 20px;
+}
+
+@media (min-width: 992px) {
+    .prediction-container {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 .column {
@@ -148,13 +205,23 @@ header nav.navbar .navbar-nav .nav-item .nav-link i {
 }
 
 .column-title {
-    font-size: 1rem;
     text-transform: uppercase;
+    font-weight: 800;
     border-bottom: 2px solid var(--f1-red);
-    display: inline-block;
-    margin-bottom: 10px;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
 }
 
+.d-none {
+    display: none !important;
+}
+
+.small-slot {
+    height: 40px;
+}
+
+/* --- CARDS & SLOTS --- */
 .driver-card {
     background-color: var(--f1-black);
     border: 1px solid var(--f1-border);
@@ -164,6 +231,10 @@ header nav.navbar .navbar-nav .nav-item .nav-link i {
     cursor: grab;
     display: flex;
     align-items: center;
+}
+
+.team-card {
+    border-left: 4px solid var(--f1-blue);
 }
 
 .dr-number {
@@ -176,14 +247,6 @@ header nav.navbar .navbar-nav .nav-item .nav-link i {
     flex-grow: 1;
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--f1-white);
-}
-
-.dr-team {
-    font-size: 0.7rem;
-    opacity: 0.6;
-    text-transform: uppercase;
-    color: var(--f1-white);
 }
 
 .pos-num {
@@ -205,12 +268,32 @@ header nav.navbar .navbar-nav .nav-item .nav-link i {
     align-items: center;
     padding-left: 10px;
     color: #888;
-    font-style: italic;
-    font-size: 0.8rem;
 }
 
-.drop-target.filled {
+    .drop-target.filled {
         padding: 0;
-        border: 1px solid;
+        border: 1px solid var(--f1-border);
+        background: var(--f1-black);
+    }
+
+    .drop-target .driver-card {
+        border: none;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+/* --- FORMULIEREN (INLOGGEN) --- */
+.form-control:focus {
+    background-color: var(--f1-dark-grey);
+    border-color: var(--f1-red);
+    box-shadow: none;
+    color: white;
 }
 
+footer {
+    padding: 20px 0;
+    text-align: center;
+    color: var(--f1-white);
+    background-color: var(--f1-black);
+    border-top: 1px solid var(--f1-border);
+}

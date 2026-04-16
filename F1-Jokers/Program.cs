@@ -22,12 +22,13 @@ namespace F1Jokers
             app.UseHttpsRedirection();
             app.UseRouting();
 
+//            app.UseAuthentication(); Zodra we tokens hebben toegevoegd
             app.UseAuthorization();
 
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}")
+                pattern: "{controller=Account}/{action=Inloggen}/{id?}")
                 .WithStaticAssets();
 
             app.Run();
