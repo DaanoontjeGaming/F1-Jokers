@@ -1,64 +1,140 @@
 ﻿@model F1Jokers.Models.VoorspellingViewModel
-@{
-    ViewData["Title"] = "Voorspellen";
-}
 
 <section class="race-info text-center mb-4">
     <h1>@Model.RaceNaam</h1>
-    <div class="deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold">
-        Deadline: 01/05/2026 - 15:00 (Kwalificatie)
+    
+    <div class="race-tabs btn-group mb-3">
+        <button type="button" class="btn-tab active" onclick="switchView('main-race')">Hoofdrace</button>
+        <button type="button" class="btn-tab" onclick="switchView('sprint-race')">Sprintrace</button>
+        <button type="button" class="btn-tab btn-season" onclick="switchView('season-drivers')">Seizoen Coureurs</button>
+        <button type="button" class="btn-tab btn-season" onclick="switchView('season-teams')">Seizoen Teams</button>
+    </div>
+
+    <div class="deadline-container mb-3">
+        <div id="deadline-status" class="deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold">
+            <i class="bi bi-clock-fill"></i> <span id="deadline-text">Selecteer een onderdeel</span>
+        </div>
     </div>
 </section>
 
 <div class="prediction-container">
-    <section class="column">
-        <h2 class="column-title">Coureurs</h2>
-        <ul class="driver-list" id="pool" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <li class="driver-card" draggable="true" ondragstart="drag(event)" id="d1">
-                <span class="dr-number">1</span>
-                <span class="dr-name">Max Verstappen</span>
-                <span class="dr-team">Red Bull Racing</span>
-            </li>
-            <li class="driver-card" draggable="true" ondragstart="drag(event)" id="d2">
-                <span class="dr-number">4</span>
-                <span class="dr-name">Lando Norris</span>
-                <span class="dr-team">McLaren</span>
-            </li>
-        </ul>
+    <section class="column" id="selection-pool">
+        <div id="pool-drivers-wrapper">
+            <h2 class="column-title">Coureurs</h2>
+            <ul class="driver-list mb-4" id="pool-drivers" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <li class="driver-card" draggable="true" ondragstart="drag(event)" id="d1">
+                    <span class="dr-number">1</span>
+                    <span class="dr-name">Max Verstappen</span>
+                    <span class="dr-team">Red Bull Racing</span>
+                </li>
+            </ul>
+        </div>
+        <div id="pool-teams-wrapper" class="d-none">
+            <h2 class="column-title">Teams</h2>
+            <ul class="driver-list" id="pool-teams" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <li class="driver-card team-card" draggable="true" ondragstart="drag(event)" id="t1">
+                    <span class="dr-name">Red Bull Racing</span>
+                </li>
+            </ul>
+        </div>
     </section>
 
-    <section class="column">
-        <h2 class="column-title">Jouw Top 10</h2>
-        <div class="drop-zones">
+    <section class="column race-section" id="main-race">
+        <h2 class="column-title">Top 10 (Race)</h2>
+        <div class="drop-zones mb-4">
             @for (int i = 1; i <= 10; i++)
             {
                 <div class="slot d-flex mb-2">
                     <span class="pos-num">@i</span>
-                    <div class="drop-target" id="pos@i" ondrop="drop(event)" ondragover="allowDrop(event)">Sleep hier...</div>
+                    <div class="drop-target" id="race-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)">...</div>
                 </div>
             }
         </div>
-
-        <div class="bonus-section mt-4">
-            <h3>Extra</h3>
-    
+        <div class="bonus-section mt-4 p-3 border border-secondary rounded">
+            <h3 class="column-title h5">Race Extra</h3>
             <div class="mb-3">
-                <label class="d-block text-danger small fw-bold">Pole Position</label>
-                <select class="form-select bg-dark text-white border-secondary">
-                    <option>Kies coureur...</option>
-                    <option>Max Verstappen</option>
-                    <option>Lando Norris</option>
-                </select>
+                <label class="text-danger small fw-bold d-block mb-1">Pole Position</label>
+                <select class="form-select bg-dark text-white border-secondary"><option>Kies coureur...</option></select>
             </div>
+            <div class="mb-0">
+                <label class="text-danger small fw-bold d-block mb-1">Snelste Ronde</label>
+                <select class="form-select bg-dark text-white border-secondary"><option>Kies coureur...</option></select>
+            </div>
+        </div>
+    </section>
 
-            <div class="mb-3">
-                <label class="d-block text-danger small fw-bold">Snelste Ronde</label>
-                <select class="form-select bg-dark text-white border-secondary">
-                    <option>Kies coureur...</option>
-                    <option>Max Verstappen</option>
-                    <option>Lando Norris</option>
-                </select>
+    <section class="column race-section d-none" id="sprint-race">
+        <h2 class="column-title">Top 5 (Sprint)</h2>
+        <div class="drop-zones mb-4">
+            @for (int i = 1; i <= 5; i++)
+            {
+                <div class="slot d-flex mb-2">
+                    <span class="pos-num">@i</span>
+                    <div class="drop-target" id="sprint-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)">...</div>
+                </div>
+            }
+        </div>
+        <div class="bonus-section mt-4 p-3 border border-secondary rounded">
+            <h3 class="column-title h5">Sprint Extra</h3>
+            <div class="mb-0">
+                <label class="text-danger small fw-bold d-block mb-1">Sprint Pole</label>
+                <select class="form-select bg-dark text-white border-secondary"><option>Kies coureur...</option></select>
             </div>
+        </div>
+    </section>
+
+    <section class="column race-section d-none" id="season-drivers">
+        <h2 class="column-title">Eindstand Coureurs</h2>
+        <div class="drop-zones mb-4">
+            @for (int i = 1; i <= 22; i++)
+            {
+                <div class="slot d-flex mb-1 small-slot">
+                    <span class="pos-num">@i</span>
+                    <div class="drop-target" id="season-dr-@i" ondrop="drop(event)" ondragover="allowDrop(event)">...</div>
+                </div>
+            }
+        </div>
+        <div class="bonus-section mt-4 p-3 border border-secondary rounded">
+            <h3 class="column-title h5">Seizoen Awards</h3>
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label class="text-danger small fw-bold d-block mb-1">Meeste Race Wins</label>
+                    <select class="form-select bg-dark text-white border-secondary">
+                        <option>Kies...</option>
+                    </select>
+                </div>
+                <div class="col-6 mb-3">
+                    <label class="text-danger small fw-bold d-block mb-1">Meeste Race Poles</label>
+                    <select class="form-select bg-dark text-white border-secondary">
+                        <option>Kies...</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="text-danger small fw-bold d-block mb-1">Meeste Sprint Wins</label>
+                    <select class="form-select bg-dark text-white border-secondary">
+                        <option>Kies...</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="text-danger small fw-bold d-block mb-1">Meeste Sprint Poles</label>
+                    <select class="form-select bg-dark text-white border-secondary">
+                        <option>Kies...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="column race-section d-none" id="season-teams">
+        <h2 class="column-title">Eindstand Teams</h2>
+        <div class="drop-zones">
+            @for (int i = 1; i <= 11; i++)
+            {
+                <div class="slot d-flex mb-1 small-slot">
+                    <span class="pos-num">@i</span>
+                    <div class="drop-target" id="season-team-@i" ondrop="drop(event)" ondragover="allowDrop(event)">...</div>
+                </div>
+            }
         </div>
     </section>
 </div>

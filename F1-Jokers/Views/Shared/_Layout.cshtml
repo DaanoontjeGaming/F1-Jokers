@@ -16,6 +16,11 @@
         <div class="container-fluid d-flex flex-nowrap position-relative">
             
             @* Check of we op de Account/Inloggen pagina zijn *@
+    <header>
+    <nav class="navbar mobile-bottom-nav">
+        <div class="container-fluid d-flex flex-nowrap position-relative">
+            
+            @* Logo Sectie: Alleen klikbaar op inlogpagina *@
             @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Account")
             {
                 <a asp-controller="Home" asp-action="Index" class="navbar-brand me-0" aria-label="Terug naar Home">
@@ -30,6 +35,7 @@
             }
 
             @* Navigatie-items (alleen als we NIET op de inlogpagina zijn) *@
+            @* 1. De Navigatie: Blijft ALTIJD hetzelfde (behalve op de inlogpagina) *@
             @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
             {
                 <div class="custom-nav-container">
@@ -38,6 +44,46 @@
                     </ul>
                 </div>
             }
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Voorspelling" asp-action="Index">
+                                <i class="bi bi-gear-wide-connected"></i>
+                                <span>Voorspellen</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Stand" asp-action="Index">
+                                <i class="bi bi-trophy"></i>
+                                <span>Stand</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Uitslag" asp-action="Index">
+                                <i class="bi bi-flag"></i>
+                                <span>Uitslagen</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Profiel" asp-action="Index">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Profiel</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            }
+
+            @* 2. De Indicator: Puur om te laten zien wie er is ingelogd (Altijd rechtsboven) *@
+            <div class="user-indicator-header d-flex flex-column align-items-center">
+                <i class="bi bi-person-circle"></i>
+                <span class="user-name-label">Gastbezoeker</span>
+            </div>
+
         </div>
     </nav>
 </header>
@@ -47,7 +93,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer">
         <div class="container">
             &copy; 2026 - F1-Jokers - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>

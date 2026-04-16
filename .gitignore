@@ -2,8 +2,8 @@
 
 # Build resultaten
 [Bb]in/
-[Obj]/
-[Log]/
+[Oo]bj/
+[Ll]og/
 
 # Visual Studio specifieke bestanden
 .vs/
