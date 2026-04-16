@@ -1,50 +1,33 @@
-## [Bb]uild resultaten
-[Bb]in/
-[Obj]/
-[Log]/
+## .gitignore voor ASP.NET Core (F1-Jokers project)
 
-## Visual Studio specifieke bestanden
+# Build resultaten
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Visual Studio specifieke bestanden
 .vs/
 *.user
 *.userosscache
 *.sln.docstates
-*.suo
-*.suo.user
-*.suo.userosscache
 
-## ASP.NET Core & Web rommel
-.consul/
-.ghw/
-project.lock.json
-*.cache
-*.temp
-_ReSharper*/
-[Tt]est[Rr]esult*/
-deploy.sh
-
-## Gebruikersinstellingen en Secrets (CRUCIAAL)
+# Gebruikersspecifieke instellingen (zoals database connectiestrings)
 appsettings.Development.json
 usersecrets.json
-*.ntvs_analysis.dat
 
-## Node.js / Front-end (voor als je later extra tools gebruikt)
+# Rider / JetBrains
+.idea/
+
+# VS Code
+.vscode/
+
+# Node.js (indien je later npm gebruikt)
 node_modules/
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnp/
-.pnp.js
 
-## Besturingssysteem bestanden
+# OS specifieke bestanden
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+thumbs.db
 
-## Rider / JetBrains / VS Code
-.idea/
-.vscode/
-*.swp
+# Gepubliceerde bestanden
+publish/
