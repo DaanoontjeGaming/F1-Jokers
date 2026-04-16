@@ -12,10 +12,26 @@
 </head>
 <body>
     <header>
-        <nav class="navbar mobile-bottom-nav">
-            <div class="container-fluid d-flex flex-nowrap position-relative">
-                <img src="~/images/F1Jokers.png" alt="F1-Jokers Logo" class="fixed-app-logo" />
+    <nav class="navbar mobile-bottom-nav">
+        <div class="container-fluid d-flex flex-nowrap position-relative">
             
+            @* Logo Sectie: Alleen klikbaar op inlogpagina *@
+            @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Account")
+            {
+                <a asp-controller="Home" asp-action="Index" class="navbar-brand me-0" aria-label="Terug naar Home">
+                    <img src="~/images/F1Jokers.png" alt="F1-Jokers Logo" class="fixed-app-logo" />
+                </a>
+            }
+            else
+            {
+                <div class="navbar-brand me-0">
+                    <img src="~/images/F1Jokers.png" alt="F1-Jokers Logo" class="fixed-app-logo" />
+                </div>
+            }
+
+            @* 1. De Navigatie: Blijft ALTIJD hetzelfde (behalve op de inlogpagina) *@
+            @if (ViewContext.RouteData.Values["controller"]?.ToString() != "Account")
+            {
                 <div class="custom-nav-container">
                     <ul class="navbar-nav d-flex flex-row list-unstyled mb-0">
                         <li class="nav-item">
@@ -50,9 +66,17 @@
                         </li>
                     </ul>
                 </div>
+            }
+
+            @* 2. De Indicator: Puur om te laten zien wie er is ingelogd (Altijd rechtsboven) *@
+            <div class="user-indicator-header d-flex flex-column align-items-center">
+                <i class="bi bi-person-circle"></i>
+                <span class="user-name-label">Gastbezoeker</span>
             </div>
-        </nav>
-    </header>
+
+        </div>
+    </nav>
+</header>
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()

@@ -18,9 +18,8 @@ function drop(ev) {
     if (pool && data.startsWith("clone-")) {
         const originalId = data.split('-')[1];
         const originalElement = document.getElementById(originalId);
-        if (originalElement) {
-            originalElement.style.display = "flex";
-        }
+        if (originalElement) originalElement.style.display = "flex";
+
         const parentZone = draggedElement.parentNode;
         parentZone.classList.remove("filled");
         parentZone.innerHTML = "...";
@@ -59,44 +58,44 @@ function switchView(viewId) {
     const raceDeadline = "Deadline Race: 01/05/2026 - 15:00";
     const seasonDeadline = "Deadline Seizoen: Start Q1 Australië (13/03/2026 - 07:00)";
 
-    if (viewId.startsWith('season')) {
-        deadlineText.innerText = seasonDeadline;
-        deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-warning text-warning fw-bold";
-        if (viewId === 'season-teams') {
-            driverPool.classList.add('d-none');
-            teamPool.classList.remove('d-none');
+    if (deadlineText && deadlineBadge) {
+        if (viewId.startsWith('season')) {
+            deadlineText.innerText = seasonDeadline;
+            deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-warning text-warning fw-bold";
+            if (viewId === 'season-teams') {
+                driverPool?.classList.add('d-none');
+                teamPool?.classList.remove('d-none');
+            } else {
+                driverPool?.classList.remove('d-none');
+                teamPool?.classList.add('d-none');
+            }
         } else {
-            driverPool.classList.remove('d-none');
-            teamPool.classList.add('d-none');
+            deadlineText.innerText = raceDeadline;
+            deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold";
+            driverPool?.classList.remove('d-none');
+            teamPool?.classList.add('d-none');
         }
-    } else {
-        deadlineText.innerText = raceDeadline;
-        deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold";
-        driverPool.classList.remove('d-none');
-        teamPool.classList.add('d-none');
     }
 
     sections.forEach(sec => sec.classList.add('d-none'));
     const activeSection = document.getElementById(viewId);
-    activeSection.classList.remove('d-none');
+    if (activeSection) activeSection.classList.remove('d-none');
 
     allCards.forEach(card => {
-        if (!card.id.startsWith('clone-')) {
-            card.style.display = "flex";
-        }
+        if (!card.id.startsWith('clone-')) card.style.display = "flex";
     });
 
-    const filledSlots = activeSection.querySelectorAll('.drop-target.filled .driver-card');
-    filledSlots.forEach(clone => {
-        const originalId = clone.id.split('-')[1];
-        const originalElement = document.getElementById(originalId);
-        if (originalElement) {
-            originalElement.style.display = "none";
-        }
-    });
+    if (activeSection) {
+        const filledSlots = activeSection.querySelectorAll('.drop-target.filled .driver-card');
+        filledSlots.forEach(clone => {
+            const originalId = clone.id.split('-')[1];
+            const originalElement = document.getElementById(originalId);
+            if (originalElement) originalElement.style.display = "none";
+        });
+    }
 
     const buttons = document.querySelectorAll('.btn-tab');
     buttons.forEach(btn => btn.classList.remove('active'));
-    const clickedBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(viewId));
+    const clickedBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick')?.includes(viewId));
     if (clickedBtn) clickedBtn.classList.add('active');
 }
