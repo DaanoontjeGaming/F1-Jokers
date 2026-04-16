@@ -1,33 +1,20 @@
-﻿## .gitignore voor ASP.NET Core (F1-Jokers project)
-
-# Build resultaten
+﻿# --- .NET / Visual Studio ---
 [Bb]in/
-[Obj]/
-[Log]/
+[Ob]j/
+[Ll]og/
 
-# Visual Studio specifieke bestanden
-.vs/
+# Gebruikerspecifieke bestanden
 *.user
 *.userosscache
-*.sln.docstates
+*.sln.docuser
 
-# Gebruikersspecifieke instellingen (zoals database connectiestrings)
-appsettings.Development.json
-usersecrets.json
-
-# Rider / JetBrains
+# Visual Studio tijdelijke mappen
+.vs/
 .idea/
 
-# VS Code
-.vscode/
-
-# Node.js (indien je later npm gebruikt)
-node_modules/
-npm-debug.log*
-
-# OS specifieke bestanden
+# --- Besturingssysteem ---
 .DS_Store
-thumbs.db
+Thumbs.db
 
-# Gepubliceerde bestanden
-publish/
+# --- Web / Node (indien van toepassing) ---
+node_modules/
