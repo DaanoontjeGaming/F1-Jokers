@@ -26,11 +26,26 @@ function drop(ev) {
         return;
     }
 
+    /* Terugzetten naar de pool */
+    if (pool && data.startsWith("clone-")) {
+        const originalId = data.split('-')[1];
+        const originalElement = document.getElementById(originalId);
+        if (originalElement) {
+            originalElement.style.display = "flex";
+        }
+        const parentZone = draggedElement.parentNode;
+        parentZone.classList.remove("filled");
+        parentZone.innerHTML = "...";
+        return;
+    }
+
+    /* In een drop-zone plaatsen */
     if (dropZone) {
         if (data.startsWith("clone-")) {
             const oldParent = draggedElement.parentNode;
             oldParent.innerHTML = "...";
             oldParent.classList.remove("filled");
+
             dropZone.innerHTML = "";
             dropZone.appendChild(draggedElement);
         }
@@ -38,6 +53,7 @@ function drop(ev) {
             const clone = draggedElement.cloneNode(true);
             clone.id = "clone-" + data + "-" + dropZone.id;
             clone.setAttribute("ondragstart", "drag(event)");
+
             dropZone.innerHTML = "";
             dropZone.appendChild(clone);
             draggedElement.style.display = "none";
@@ -46,6 +62,7 @@ function drop(ev) {
     }
 }
 
+/* --- VIEW SWITCHER LOGICA (Voorspellingen) --- */
 /* --- VIEW SWITCHER LOGICA --- */
 function switchView(viewId) {
     const sections = document.querySelectorAll('.race-section');
@@ -55,6 +72,11 @@ function switchView(viewId) {
     const deadlineText = document.getElementById('deadline-text');
     const deadlineBadge = document.getElementById('deadline-status');
 
+    /* Deadlines 2026: Australië als seizoensopener */
+    const raceDeadline = "Deadline Race: 01/05/2026 - 15:00";
+    const seasonDeadline = "Deadline Seizoen: Start Q1 Australië (13/03/2026 - 07:00)";
+
+    /* Alleen uitvoeren als de deadline elementen bestaan (niet op inlogpagina) */
     const raceDeadline = "Deadline Race: 01/05/2026 - 15:00";
     const seasonDeadline = "Deadline Seizoen: Start Q1 Australië (13/03/2026 - 07:00)";
 
@@ -62,6 +84,13 @@ function switchView(viewId) {
         if (viewId.startsWith('season')) {
             deadlineText.innerText = seasonDeadline;
             deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-warning text-warning fw-bold";
+
+            if (viewId === 'season-teams') {
+                driverPool.classList.add('d-none');
+                teamPool.classList.remove('d-none');
+            } else {
+                driverPool.classList.remove('d-none');
+                teamPool.classList.add('d-none');
             if (viewId === 'season-teams') {
                 driverPool?.classList.add('d-none');
                 teamPool?.classList.remove('d-none');
@@ -72,6 +101,23 @@ function switchView(viewId) {
         } else {
             deadlineText.innerText = raceDeadline;
             deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold";
+
+            driverPool.classList.remove('d-none');
+            teamPool.classList.add('d-none');
+        }
+    }
+
+    /* Wisselen van sectie */
+    sections.forEach(sec => sec.classList.add('d-none'));
+    const activeSection = document.getElementById(viewId);
+    if (activeSection) {
+        activeSection.classList.remove('d-none');
+    }
+
+    /* Originelen herstellen */
+    allCards.forEach(card => {
+        if (!card.id.startsWith('clone-')) {
+            card.style.display = "flex";
             driverPool?.classList.remove('d-none');
             teamPool?.classList.add('d-none');
         }
@@ -85,11 +131,19 @@ function switchView(viewId) {
         if (!card.id.startsWith('clone-')) card.style.display = "flex";
     });
 
+    /* Reeds ingevulde kaarten verbergen in de pool */
     if (activeSection) {
         const filledSlots = activeSection.querySelectorAll('.drop-target.filled .driver-card');
         filledSlots.forEach(clone => {
             const originalId = clone.id.split('-')[1];
             const originalElement = document.getElementById(originalId);
+            if (originalElement) {
+                originalElement.style.display = "none";
+            }
+        });
+    }
+
+    /* Tab buttons updaten */
             if (originalElement) originalElement.style.display = "none";
         });
     }

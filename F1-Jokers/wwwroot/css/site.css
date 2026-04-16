@@ -22,7 +22,7 @@ body {
     margin: 0;
 }
 
-.fixed-app-logo {
+
     height: 35px;
     width: auto;
     z-index: 2000;
@@ -57,6 +57,43 @@ header nav.navbar {
         padding: 0;
     }
 
+.navbar-brand {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+    /* WCAG: Focus ring voor toetsenbordgebruikers */
+    .navbar-brand:focus, .nav-link:focus, .btn-tab:focus, .form-control:focus {
+        outline: 2px solid var(--f1-white);
+        outline-offset: 2px;
+    }
+
+.navbar-nav .nav-link {
+    color: var(--f1-white);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 15px;
+    transition: color 0.2s;
+}
+
+    .navbar-nav .nav-link i {
+        font-size: 1.6rem;
+    }
+
+    .navbar-nav .nav-link span {
+        font-size: 0.7rem;
+    }
+
+    .navbar-nav .nav-link:hover {
+        color: var(--f1-red);
+    }
+
+/* Desktop: Logo links, nav direct daarnaast */
 .navbar-nav .nav-link {
     color: var(--f1-white);
     text-decoration: none;
@@ -130,7 +167,9 @@ header nav.navbar {
         justify-content: flex-start;
         width: auto;
     }
+}
 
+/* Mobiel: Logo linksboven fixed, nav gecentreerd onderaan */
     .user-indicator-header {
         right: 30px;
     }
@@ -176,6 +215,40 @@ header nav.navbar {
         justify-content: space-around;
         width: 100%;
     }
+}
+
+/* --- TABS & DEADLINE --- */
+.race-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-tab {
+    background-color: var(--f1-dark-grey);
+    color: var(--f1-white);
+    border: 1px solid var(--f1-border);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+    .btn-tab.active {
+        background-color: var(--f1-red);
+        border-color: var(--f1-red);
+    }
+
+.text-warning {
+    color: var(--f1-orange);
+}
+
+.border-warning {
+    border-color: var(--f1-orange);
+}
+
+/* --- CONTAINERS & LAYOUT --- */
 
     .user-indicator-header {
         position: fixed;
@@ -250,6 +323,7 @@ header nav.navbar {
     height: 40px;
 }
 
+/* --- CARDS & SLOTS --- */
 .driver-card {
     background-color: var(--f1-black);
     border: 1px solid var(--f1-border);
@@ -259,6 +333,10 @@ header nav.navbar {
     cursor: grab;
     display: flex;
     align-items: center;
+}
+
+.team-card {
+    border-left: 4px solid var(--f1-blue);
 }
 
 .dr-number {
@@ -300,6 +378,13 @@ header nav.navbar {
         background: var(--f1-black);
     }
 
+    .drop-target .driver-card {
+        border: none;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+/* --- FORMULIEREN (INLOGGEN) --- */
 .form-control:focus {
     background-color: var(--f1-dark-grey);
     border-color: var(--f1-red);
