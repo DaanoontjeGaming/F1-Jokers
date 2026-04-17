@@ -22,7 +22,7 @@ body {
     margin: 0;
 }
 
-
+.fixed-app-logo {
     height: 35px;
     width: auto;
     z-index: 2000;
@@ -57,43 +57,12 @@ header nav.navbar {
         padding: 0;
     }
 
-.navbar-brand {
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    text-decoration: none;
+/* WCAG: Focus ring voor toetsenbordgebruikers */
+.navbar-brand:focus, .nav-link:focus, .btn-tab:focus, .form-control:focus {
+    outline: 2px solid var(--f1-white);
+    outline-offset: 2px;
 }
 
-    /* WCAG: Focus ring voor toetsenbordgebruikers */
-    .navbar-brand:focus, .nav-link:focus, .btn-tab:focus, .form-control:focus {
-        outline: 2px solid var(--f1-white);
-        outline-offset: 2px;
-    }
-
-.navbar-nav .nav-link {
-    color: var(--f1-white);
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5px 15px;
-    transition: color 0.2s;
-}
-
-    .navbar-nav .nav-link i {
-        font-size: 1.6rem;
-    }
-
-    .navbar-nav .nav-link span {
-        font-size: 0.7rem;
-    }
-
-    .navbar-nav .nav-link:hover {
-        color: var(--f1-red);
-    }
-
-/* Desktop: Logo links, nav direct daarnaast */
 .navbar-nav .nav-link {
     color: var(--f1-white);
     text-decoration: none;
@@ -122,7 +91,7 @@ header nav.navbar {
     top: 50%;
     transform: translateY(-50%);
     color: var(--f1-white);
-    pointer-events: none; 
+    pointer-events: none;
 }
 
     .user-indicator-header i {
@@ -167,9 +136,7 @@ header nav.navbar {
         justify-content: flex-start;
         width: auto;
     }
-}
 
-/* Mobiel: Logo linksboven fixed, nav gecentreerd onderaan */
     .user-indicator-header {
         right: 30px;
     }
@@ -184,6 +151,7 @@ header nav.navbar {
 }
 
 /* Mobiel settings */
+/* Mobiel: Logo linksboven fixed, nav gecentreerd onderaan */
 @media (max-width: 767.98px) {
     body {
         padding-bottom: 85px;
@@ -214,6 +182,13 @@ header nav.navbar {
     .navbar-nav {
         justify-content: space-around;
         width: 100%;
+    }
+
+    .user-indicator-header {
+        position: fixed;
+        top: 12px;
+        right: 15px;
+        transform: none;
     }
 }
 
@@ -249,43 +224,6 @@ header nav.navbar {
 }
 
 /* --- CONTAINERS & LAYOUT --- */
-
-    .user-indicator-header {
-        position: fixed;
-        top: 12px;
-        right: 15px;
-        transform: none;
-    }
-}
-
-/* WCAG Focus */
-.navbar-brand:focus, .nav-link:focus, .btn-tab:focus, .form-control:focus {
-    outline: 2px solid var(--f1-white);
-    outline-offset: 2px;
-}
-
-.race-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.btn-tab {
-    background-color: var(--f1-dark-grey);
-    color: var(--f1-white);
-    border: 1px solid var(--f1-border);
-    padding: 10px 20px;
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-    .btn-tab.active {
-        background-color: var(--f1-red);
-        border-color: var(--f1-red);
-    }
-
 .prediction-container {
     display: grid;
     grid-template-columns: 1fr;

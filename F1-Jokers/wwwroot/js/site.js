@@ -15,17 +15,6 @@ function drop(ev) {
     const dropZone = target.closest(".drop-target");
     const pool = target.closest(".driver-list");
 
-    if (pool && data.startsWith("clone-")) {
-        const originalId = data.split('-')[1];
-        const originalElement = document.getElementById(originalId);
-        if (originalElement) originalElement.style.display = "flex";
-
-        const parentZone = draggedElement.parentNode;
-        parentZone.classList.remove("filled");
-        parentZone.innerHTML = "...";
-        return;
-    }
-
     /* Terugzetten naar de pool */
     if (pool && data.startsWith("clone-")) {
         const originalId = data.split('-')[1];
@@ -63,7 +52,6 @@ function drop(ev) {
 }
 
 /* --- VIEW SWITCHER LOGICA (Voorspellingen) --- */
-/* --- VIEW SWITCHER LOGICA --- */
 function switchView(viewId) {
     const sections = document.querySelectorAll('.race-section');
     const allCards = document.querySelectorAll('.driver-card');
@@ -77,20 +65,11 @@ function switchView(viewId) {
     const seasonDeadline = "Deadline Seizoen: Start Q1 Australië (13/03/2026 - 07:00)";
 
     /* Alleen uitvoeren als de deadline elementen bestaan (niet op inlogpagina) */
-    const raceDeadline = "Deadline Race: 01/05/2026 - 15:00";
-    const seasonDeadline = "Deadline Seizoen: Start Q1 Australië (13/03/2026 - 07:00)";
-
     if (deadlineText && deadlineBadge) {
         if (viewId.startsWith('season')) {
             deadlineText.innerText = seasonDeadline;
             deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-warning text-warning fw-bold";
 
-            if (viewId === 'season-teams') {
-                driverPool.classList.add('d-none');
-                teamPool.classList.remove('d-none');
-            } else {
-                driverPool.classList.remove('d-none');
-                teamPool.classList.add('d-none');
             if (viewId === 'season-teams') {
                 driverPool?.classList.add('d-none');
                 teamPool?.classList.remove('d-none');
@@ -102,8 +81,8 @@ function switchView(viewId) {
             deadlineText.innerText = raceDeadline;
             deadlineBadge.className = "deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold";
 
-            driverPool.classList.remove('d-none');
-            teamPool.classList.add('d-none');
+            driverPool?.classList.remove('d-none');
+            teamPool?.classList.add('d-none');
         }
     }
 
@@ -118,17 +97,7 @@ function switchView(viewId) {
     allCards.forEach(card => {
         if (!card.id.startsWith('clone-')) {
             card.style.display = "flex";
-            driverPool?.classList.remove('d-none');
-            teamPool?.classList.add('d-none');
         }
-    }
-
-    sections.forEach(sec => sec.classList.add('d-none'));
-    const activeSection = document.getElementById(viewId);
-    if (activeSection) activeSection.classList.remove('d-none');
-
-    allCards.forEach(card => {
-        if (!card.id.startsWith('clone-')) card.style.display = "flex";
     });
 
     /* Reeds ingevulde kaarten verbergen in de pool */
@@ -144,10 +113,6 @@ function switchView(viewId) {
     }
 
     /* Tab buttons updaten */
-            if (originalElement) originalElement.style.display = "none";
-        });
-    }
-
     const buttons = document.querySelectorAll('.btn-tab');
     buttons.forEach(btn => btn.classList.remove('active'));
     const clickedBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick')?.includes(viewId));
