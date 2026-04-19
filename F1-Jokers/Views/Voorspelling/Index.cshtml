@@ -1,5 +1,12 @@
 ﻿@model F1Jokers.Models.VoorspellingViewModel
 
+@{
+    var gesorteerdeCoureurs = Model.Coureurs?
+        .OrderBy(c => c.Team != null ? c.Team.Teamnaam : "ZZZ")
+        .ThenBy(c => c.Startnr)
+        .ToList();
+}
+
 <section class="race-info text-center mb-4">
     <div class="mb-4">
         <form method="get" action="/Voorspelling/Index">
@@ -42,19 +49,21 @@
     </div>
 </section>
 
-<div class="prediction-container d-flex gap-4 flex-column flex-lg-row">
-    <section class="column flex-grow-1" id="selection-pool" style="min-width: 300px;">
+<div class="prediction-container d-flex gap-4 responsive-layout">
+    
+    <section class="column flex-grow-1 desktop-only" id="selection-pool" style="min-width: 300px;">
         <h2 class="column-title border-bottom border-danger pb-2 mb-3">Coureurs</h2>
         
         <ul class="driver-list mb-4 race-pool list-unstyled" id="pool-main" ondrop="drop(event)" ondragover="allowDrop(event)">
-            @if (Model.Coureurs != null)
+            @if (gesorteerdeCoureurs != null)
             {
-                foreach (var coureur in Model.Coureurs)
+                foreach (var coureur in gesorteerdeCoureurs)
                 {
                     <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center" draggable="true" ondragstart="drag(event)" id="main-c-@coureur.Startnr">
                         <div>
-                            <span class="dr-number text-danger fw-bold me-2">@coureur.Startnr</span>
-                            <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
+                            <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; min-width: 25px;">@coureur.Startnr</span>
+                            <span class="dr-name" style="display: inline-block; min-width: 200px;">@coureur.Voornaam @coureur.Achternaam</span>
+                            <span class="dr-team">@coureur.Team?.Teamnaam</span>
                         </div>
                         <span class="dr-team small text-muted">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
                     </li>
@@ -64,14 +73,14 @@
 
         @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
         {
-            <ul class="driver-list mb-4 race-pool d-none list-unstyled" id="pool-sprint" ondrop="drop(event)" ondragover="allowDrop(event)">
-                @if (Model.Coureurs != null)
+            <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-sprint" ondrop="drop(event)" ondragover="allowDrop(event)">
+                @if (gesorteerdeCoureurs != null)
                 {
-                    foreach (var coureur in Model.Coureurs)
+                    foreach (var coureur in gesorteerdeCoureurs)
                     {
                         <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center" draggable="true" ondragstart="drag(event)" id="sprint-c-@coureur.Startnr">
                             <div>
-                                <span class="dr-number text-danger fw-bold me-2">@coureur.Startnr</span>
+                                <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; min-width: 25px;">@coureur.Startnr</span>
                                 <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
                             </div>
                             <span class="dr-team small text-muted">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
@@ -89,7 +98,19 @@
             {
                 <div class="slot d-flex mb-2 align-items-center">
                     <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
-                    <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2" id="race-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+                    
+                    <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="race-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+                    
+                    <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-main" id="mobile-race-pos@i">
+                        <option value="">Kies coureur...</option>
+                        @if (gesorteerdeCoureurs != null)
+                        {
+                            foreach (var c in gesorteerdeCoureurs)
+                            {
+                                <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                            }
+                        }
+                    </select>
                 </div>
             }
         </div>
@@ -99,11 +120,11 @@
                 <label class="text-danger small fw-bold d-block mb-1">Pole Position</label>
                 <select class="form-select bg-dark text-white border-secondary">
                     <option value="">Kies coureur...</option>
-                    @if (Model.Coureurs != null)
+                    @if (gesorteerdeCoureurs != null)
                     {
-                        foreach (var c in Model.Coureurs.OrderBy(x => x.Voornaam))
+                        foreach (var c in gesorteerdeCoureurs)
                         {
-                            <option value="@c.Startnr">@c.Voornaam @c.Achternaam</option>
+                            <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
                         }
                     }
                 </select>
@@ -112,11 +133,11 @@
                 <label class="text-danger small fw-bold d-block mb-1">Snelste Ronde</label>
                 <select class="form-select bg-dark text-white border-secondary">
                     <option value="">Kies coureur...</option>
-                    @if (Model.Coureurs != null)
+                    @if (gesorteerdeCoureurs != null)
                     {
-                        foreach (var c in Model.Coureurs.OrderBy(x => x.Voornaam))
+                        foreach (var c in gesorteerdeCoureurs)
                         {
-                            <option value="@c.Startnr">@c.Voornaam @c.Achternaam</option>
+                            <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
                         }
                     }
                 </select>
@@ -126,14 +147,26 @@
 
     @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
     {
-        <section class="column race-section d-none flex-grow-1" id="sprint-race" style="min-width: 300px;">
+        <section class="column race-section hide-section flex-grow-1" id="sprint-race" style="min-width: 300px;">
             <h2 class="column-title border-bottom border-danger pb-2 mb-3">Top 5 (Sprint)</h2>
             <div class="drop-zones mb-4">
                 @for (int i = 1; i <= 5; i++)
                 {
                     <div class="slot d-flex mb-2 align-items-center">
                         <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
-                        <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2" id="sprint-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+                        
+                        <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="sprint-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+
+                        <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-sprint" id="mobile-sprint-pos@i">
+                            <option value="">Kies coureur...</option>
+                            @if (gesorteerdeCoureurs != null)
+                            {
+                                foreach (var c in gesorteerdeCoureurs)
+                                {
+                                    <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                                }
+                            }
+                        </select>
                     </div>
                 }
             </div>
@@ -143,11 +176,11 @@
                     <label class="text-danger small fw-bold d-block mb-1">Sprint Pole</label>
                     <select class="form-select bg-dark text-white border-secondary">
                         <option value="">Kies coureur...</option>
-                        @if (Model.Coureurs != null)
+                        @if (gesorteerdeCoureurs != null)
                         {
-                            foreach (var c in Model.Coureurs.OrderBy(x => x.Voornaam))
+                            foreach (var c in gesorteerdeCoureurs)
                             {
-                                <option value="@c.Startnr">@c.Voornaam @c.Achternaam</option>
+                                <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
                             }
                         }
                     </select>
@@ -156,6 +189,7 @@
         </section>
     }
 </div>
+
 @section Scripts {
     <script>
         function allowDrop(ev) {
@@ -183,7 +217,7 @@
                 const originalElement = document.getElementById(originalId);
                 
                 if (originalElement) {
-                    originalElement.classList.remove('d-none');
+                    originalElement.classList.remove('hide-section');
                 }
                 
                 const parentZone = draggedElement.parentNode;
@@ -199,7 +233,7 @@
                         const existingOriginalId = existingClone.id.replace("clone-", "").split("-target")[0];
                         const existingOriginal = document.getElementById(existingOriginalId);
                         if (existingOriginal) {
-                            existingOriginal.classList.remove('d-none');
+                            existingOriginal.classList.remove('hide-section');
                         }
                     }
                 }
@@ -216,24 +250,24 @@
                     dropZone.innerHTML = "";
                     dropZone.appendChild(clone);
                     
-                    draggedElement.classList.add('d-none');
+                    draggedElement.classList.add('hide-section');
                 }
             }
         }
 
         function switchView(tabId) {
-            document.querySelectorAll('.race-section').forEach(s => s.classList.add('d-none'));
+            document.querySelectorAll('.race-section').forEach(s => s.classList.add('hide-section'));
             const activeSection = document.getElementById(tabId);
-            if (activeSection) activeSection.classList.remove('d-none');
+            if (activeSection) activeSection.classList.remove('hide-section');
 
-            document.querySelectorAll('.race-pool').forEach(p => p.classList.add('d-none'));
+            document.querySelectorAll('.race-pool').forEach(p => p.classList.add('hide-section'));
    
             if (tabId === 'main-race') {
                 var poolMain = document.getElementById('pool-main');
-                if(poolMain) poolMain.classList.remove('d-none');
+                if(poolMain) poolMain.classList.remove('hide-section');
             } else if (tabId === 'sprint-race') {
                 var poolSprint = document.getElementById('pool-sprint');
-                if(poolSprint) poolSprint.classList.remove('d-none');
+                if(poolSprint) poolSprint.classList.remove('hide-section');
             }
 
             document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
@@ -241,5 +275,25 @@
                 event.currentTarget.classList.add('active');
             }
         }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            function setupMobileSelects(className) {
+                const selects = document.querySelectorAll('.' + className);
+                selects.forEach(select => {
+                    select.addEventListener('change', () => {
+                        const selected = Array.from(selects).map(s => s.value).filter(v => v);
+                        selects.forEach(s => {
+                            Array.from(s.options).forEach(opt => {
+                                if(opt.value) {
+                                    opt.disabled = selected.includes(opt.value) && s.value !== opt.value;
+                                }
+                            });
+                        });
+                    });
+                });
+            }
+            setupMobileSelects('mobile-select-main');
+            setupMobileSelects('mobile-select-sprint');
+        });
     </script>
 }
