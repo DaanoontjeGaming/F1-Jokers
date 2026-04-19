@@ -441,7 +441,7 @@
 
             console.log(`\n=== getValuesFromSlots called for ${desktopPrefix} ===`);
 
-            // Bepaal welke class we zoeken
+            // Bepaal welke class we zoeken voor MOBILE
             let targetClass = '';
             if (mobilePrefix === 'mobile-race-pos') {
                 targetClass = 'mobile-select-main';
@@ -453,62 +453,97 @@
                 targetClass = 'mobile-select-steams';
             }
 
-            console.log(`  Looking for class: "${targetClass}"`);
+            console.log(`  Looking for mobile class: "${targetClass}"`);
 
             // Haal ALLE selects op met deze class
             const selects = document.querySelectorAll(`select.${targetClass}`);
             console.log(`  Found ${selects.length} select elements with class "${targetClass}"`);
 
             // Loop door alle selects en lees hun waarden uit
+            let foundMobileValues = false;
             selects.forEach((select, index) => {
                 const value = select.value ? select.value.trim() : "";
-                console.log(`  Select ${index + 1}: ID="${select.id}" Value="${value}"`);
+                if (value !== "") foundMobileValues = true;
+                console.log(`  Mobile select ${index + 1}: ID="${select.id}" Value="${value}"`);
                 result.push(value);
             });
 
-            // Als we via class niet genoeg hebben, probeer ook desktop drop zones
-            if (result.length === 0 || result.every(v => v === "")) {
-                console.log(`  Mobile selects empty, trying desktop dropzones...`);
+            // Als mobile selects leeg zijn, probeer DESKTOP drag & drop
+            if (!foundMobileValues) {
+                console.log(`\n  Mobile selects empty, trying DESKTOP drag & drop...`);
+                result = []; // Reset result array
 
-                for (let i = 1; i <= count; i++) {
+                // Haal ALLE drop targets op
+                const allDropTargets = document.querySelectorAll('div.drop-target');
+                console.log(`  Found ${allDropTargets.length} total drop-target divs`);
+
+                // Filter op de juiste prefix
+                const relevantDropTargets = [];
+                allDropTargets.forEach(dropZone => {
+                    if (dropZone.id && dropZone.id.startsWith(desktopPrefix)) {
+                        relevantDropTargets.push(dropZone);
+                    }
+                });
+
+                console.log(`  Found ${relevantDropTargets.length} drop zones with prefix "${desktopPrefix}"`);
+
+                // Sorteer op positie nummer (race-pos1, race-pos2, etc.)
+                relevantDropTargets.sort((a, b) => {
+                    const numA = parseInt(a.id.replace(desktopPrefix, '')) || 0;
+                    const numB = parseInt(b.id.replace(desktopPrefix, '')) || 0;
+                    return numA - numB;
+                });
+
+                // Lees de waarden uit elke drop zone
+                relevantDropTargets.forEach((dropZone, index) => {
                     let startnr = "";
-                    const dropZoneId = `${desktopPrefix}${i}`;
 
-                    // Zoek dropzone via querySelectorAll
-                    const allDivs = document.querySelectorAll('div.drop-target');
-                    let dropZone = null;
+                    console.log(`  Drop zone ${index + 1} (${dropZone.id}): children=${dropZone.children.length}`);
 
-                    allDivs.forEach(div => {
-                        if (div.id === dropZoneId) {
-                            dropZone = div;
-                        }
-                    });
-
-                    if (dropZone && dropZone.children.length > 0) {
+                    if (dropZone.children.length > 0) {
                         const card = dropZone.children[0];
-                        if (card.classList && (card.classList.contains('driver-card') || card.classList.contains('team-card'))) {
+                        console.log(`    Card tagName: ${card.tagName}, classList: ${card.classList}`);
+
+                        if (card.tagName === 'LI' && card.classList && 
+                            (card.classList.contains('driver-card') || card.classList.contains('team-card'))) {
+
+                            // Methode 1: data-id attribuut
                             if (card.hasAttribute('data-id')) {
                                 startnr = card.getAttribute('data-id');
-                            } else if (card.id && card.id.includes('-c-')) {
-                                const match = card.id.match(/-c-(\d+)/);
-                                if (match && match[1]) startnr = match[1];
-                            } else {
-                                const numberSpan = card.querySelector('.dr-number');
-                                if (numberSpan) startnr = numberSpan.innerText.trim();
+                                console.log(`    ✓ Found data-id: ${startnr}`);
                             }
+                            // Methode 2: Extract from card ID
+                            else if (card.id && card.id.includes('-c-')) {
+                                const match = card.id.match(/-c-(\d+)/);
+                                if (match && match[1]) {
+                                    startnr = match[1];
+                                    console.log(`    ✓ Extracted from ID: ${startnr}`);
+                                }
+                            }
+                            // Methode 3: Lees .dr-number span
+                            else {
+                                const numberSpan = card.querySelector('.dr-number');
+                                if (numberSpan && numberSpan.innerText) {
+                                    startnr = numberSpan.innerText.trim();
+                                    console.log(`    ✓ Read from .dr-number: ${startnr}`);
+                                }
+                            }
+                        } else {
+                            console.log(`    ✗ Not a valid driver/team card`);
                         }
                     }
 
-                    if (i <= result.length) {
-                        result[i - 1] = startnr;
-                    } else {
-                        result.push(startnr);
-                    }
+                    result.push(startnr);
+                });
+
+                // Vul aan tot count posities
+                while (result.length < count) {
+                    result.push("");
                 }
             }
 
             const finalResult = result.join(",");
-            console.log(`\n✓✓✓ FINAL RESULT for ${desktopPrefix}: "${finalResult}" ✓✓✓\n`);
+            console.log(`\n✓✓✓ FINAL RESULT for ${desktopPrefix}: "${finalResult}" (${result.length} positions) ✓✓✓\n`);
             return finalResult;
         }
 
