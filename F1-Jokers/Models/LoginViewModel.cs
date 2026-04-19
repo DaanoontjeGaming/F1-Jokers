@@ -4,10 +4,9 @@ namespace F1Jokers.Models
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "Vul een e-mailadres in.")]
-        [EmailAddress(ErrorMessage = "Dit is geen geldig e-mailadres!")]
-        [Display(Name = "E-mailadres")]
-        public string Email { get; set; }
+        [Required(ErrorMessage = "Vul een gebruikersnaam in.")]
+        [Display(Name = "Gebruikersnaam")]
+        public string Username { get; set; }
 
         [Required(ErrorMessage = "Wachtwoord is verplicht!")]
         [DataType(DataType.Password)]

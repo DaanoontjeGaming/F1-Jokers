@@ -22,253 +22,121 @@ body {
     margin: 0;
 }
 
-
+.app-logo {
     height: 35px;
     width: auto;
-    z-index: 2000;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
 }
 
-.navbar-brand {
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    text-decoration: none;
+.header-nav-wrapper {
+    z-index: 1040;
 }
 
-header nav.navbar {
-    background-color: var(--f1-dark-grey);
-    border-bottom: 1px solid var(--f1-border);
-    padding: 5px 15px;
-    width: 100%;
+.nav-item {
+    opacity: 0.8;
+    transition: color 0.2s, opacity 0.2s;
 }
 
-    header nav.navbar .custom-nav-container {
-        display: flex;
-        width: 100%;
+    .nav-item:hover, .nav-item.active {
+        opacity: 1;
+        color: var(--f1-red) !important;
     }
 
-    header nav.navbar .navbar-nav {
-        display: flex;
-        flex-direction: row;
-        list-style: none;
-        margin: 0;
-        padding: 0;
+    .nav-item i {
+        display: inline-block;
+        margin-right: 5px;
+        font-size: 1rem;
     }
 
-.navbar-brand {
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-}
-
-    /* WCAG: Focus ring voor toetsenbordgebruikers */
-    .navbar-brand:focus, .nav-link:focus, .btn-tab:focus, .form-control:focus {
-        outline: 2px solid var(--f1-white);
-        outline-offset: 2px;
-    }
-
-.navbar-nav .nav-link {
-    color: var(--f1-white);
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5px 15px;
-    transition: color 0.2s;
-}
-
-    .navbar-nav .nav-link i {
-        font-size: 1.6rem;
-    }
-
-    .navbar-nav .nav-link span {
-        font-size: 0.7rem;
-    }
-
-    .navbar-nav .nav-link:hover {
-        color: var(--f1-red);
-    }
-
-/* Desktop: Logo links, nav direct daarnaast */
-.navbar-nav .nav-link {
-    color: var(--f1-white);
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5px 15px;
-    transition: color 0.2s;
-}
-
-    .navbar-nav .nav-link i {
-        font-size: 1.6rem;
-    }
-
-    .navbar-nav .nav-link span {
-        font-size: 0.7rem;
-    }
-
-    .navbar-nav .nav-link:hover {
-        color: var(--f1-red);
-    }
-
-.user-indicator-header {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--f1-white);
-    pointer-events: none; 
-}
-
-    .user-indicator-header i {
-        font-size: 1.4rem;
-        color: var(--f1-red);
-    }
-
-.user-name-label {
-    font-size: 0.6rem;
+.nav-text {
+    font-size: 0.95rem;
     text-transform: uppercase;
-    font-weight: bold;
-    margin-top: -2px;
 }
 
-/* Desktop settings */
+/* RESPONSIVE TONEN/VERBERGEN */
+.hide-section {
+    display: none !important;
+}
+
 @media (min-width: 768px) {
-    header nav.navbar {
-        position: sticky;
-        top: 0;
-        z-index: 1030;
-    }
-
-        header nav.navbar .container-fluid {
-            justify-content: flex-start !important;
-        }
-
-    .fixed-app-logo {
+    .app-logo {
         height: 45px;
-        margin-right: 20px;
     }
 
-    a.navbar-brand:hover {
-        opacity: 0.8;
-        cursor: pointer;
+    .mobile-only {
+        display: none !important;
     }
 
-    div.navbar-brand {
-        cursor: default;
+    .desktop-only {
+        display: block !important;
     }
 
-    header nav.navbar .custom-nav-container {
-        justify-content: flex-start;
-        width: auto;
-    }
-}
-
-/* Mobiel: Logo linksboven fixed, nav gecentreerd onderaan */
-    .user-indicator-header {
-        right: 30px;
+    .prediction-container.responsive-layout {
+        flex-direction: row !important;
     }
 
-        .user-indicator-header i {
-            font-size: 1.8rem;
-        }
+    .drop-target.desktop-only {
+        display: flex !important;
+    }
 
-    .user-name-label {
-        font-size: 0.7rem;
+    /* TIJDELIJKE FIX: Zorg dat drop zones altijd bestaan in DOM */
+    #selection-pool.desktop-only {
+        display: block !important;
     }
 }
 
-/* Mobiel settings */
 @media (max-width: 767.98px) {
     body {
-        padding-bottom: 85px;
-        padding-top: 60px;
+        padding-bottom: 80px;
     }
 
-    .fixed-app-logo {
-        position: fixed;
-        top: 15px;
-        left: 15px;
+    .logo-link {
+        pointer-events: none;
     }
 
-    header nav.navbar.mobile-bottom-nav {
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+
+    .prediction-container.responsive-layout {
+        flex-direction: column !important;
+    }
+
+    .main-navigation {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 1030;
         background-color: var(--f1-black);
         border-top: 2px solid var(--f1-border);
-        border-bottom: none;
+        z-index: 1050;
+        padding: 10px 0 5px 0;
+        padding-bottom: env(safe-area-inset-bottom);
     }
 
-    header nav.navbar .custom-nav-container {
-        justify-content: center;
+    .nav-container {
+        justify-content: space-around !important;
     }
 
-    .navbar-nav {
-        justify-content: space-around;
-        width: 100%;
-    }
-}
-
-/* --- TABS & DEADLINE --- */
-.race-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.btn-tab {
-    background-color: var(--f1-dark-grey);
-    color: var(--f1-white);
-    border: 1px solid var(--f1-border);
-    padding: 10px 20px;
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-    .btn-tab.active {
-        background-color: var(--f1-red);
-        border-color: var(--f1-red);
+    .nav-item i {
+        display: block;
+        margin-right: 0;
+        margin-bottom: 2px;
+        font-size: 1.4rem;
     }
 
-.text-warning {
-    color: var(--f1-orange);
-}
-
-.border-warning {
-    border-color: var(--f1-orange);
-}
-
-/* --- CONTAINERS & LAYOUT --- */
-
-    .user-indicator-header {
-        position: fixed;
-        top: 12px;
-        right: 15px;
-        transform: none;
+    .nav-text {
+        display: block;
+        font-size: 0.65rem;
     }
-}
 
-/* WCAG Focus */
-.navbar-brand:focus, .nav-link:focus, .btn-tab:focus, .form-control:focus {
-    outline: 2px solid var(--f1-white);
-    outline-offset: 2px;
-}
-
-.race-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    footer {
+        margin-bottom: 70px;
+    }
 }
 
 .btn-tab {
@@ -287,16 +155,7 @@ header nav.navbar {
     }
 
 .prediction-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
     margin-top: 20px;
-}
-
-@media (min-width: 992px) {
-    .prediction-container {
-        grid-template-columns: 1fr 1fr;
-    }
 }
 
 .column {
@@ -315,15 +174,6 @@ header nav.navbar {
     font-size: 1.1rem;
 }
 
-.d-none {
-    display: none !important;
-}
-
-.small-slot {
-    height: 40px;
-}
-
-/* --- CARDS & SLOTS --- */
 .driver-card {
     background-color: var(--f1-black);
     border: 1px solid var(--f1-border);
@@ -333,22 +183,6 @@ header nav.navbar {
     cursor: grab;
     display: flex;
     align-items: center;
-}
-
-.team-card {
-    border-left: 4px solid var(--f1-blue);
-}
-
-.dr-number {
-    font-weight: bold;
-    width: 30px;
-    color: var(--f1-red);
-}
-
-.dr-name {
-    flex-grow: 1;
-    font-weight: 600;
-    font-size: 0.9rem;
 }
 
 .pos-num {
@@ -369,28 +203,13 @@ header nav.navbar {
     display: flex;
     align-items: center;
     padding-left: 10px;
-    color: #888;
 }
-
-    .drop-target.filled {
-        padding: 0;
-        border: 1px solid var(--f1-border);
-        background: var(--f1-black);
-    }
 
     .drop-target .driver-card {
         border: none;
         width: 100%;
         margin-bottom: 0;
     }
-
-/* --- FORMULIEREN (INLOGGEN) --- */
-.form-control:focus {
-    background-color: var(--f1-dark-grey);
-    border-color: var(--f1-red);
-    box-shadow: none;
-    color: white;
-}
 
 footer {
     padding: 20px 0;

@@ -1,5 +1,4 @@
 ﻿@model F1Jokers.Models.LoginViewModel
-
 @{
     ViewData["Title"] = "Inloggen";
 }
@@ -9,28 +8,32 @@
         <div class="col-md-5 col-lg-4 column">
             <h2 class="column-title">Toegang F1-Jokers</h2>
             
-            <form asp-action="Inloggen" method="post" class="mt-3">
+            <form asp-controller="Account" asp-action="Inloggen" method="post" class="mt-3">
                 <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
                 <div class="mb-3">
-                    <label asp-for="Email" class="text-danger small fw-bold d-block mb-1"></label>
-                    <input asp-for="Email" class="form-control bg-dark text-white border-secondary" placeholder="E-mailadres..." />
-                    <span asp-validation-for="Email" class="text-danger small"></span>
+                    <label asp-for="Username" class="text-danger small fw-bold d-block mb-1"></label>
+                    <input asp-for="Username" class="form-control bg-dark text-white border-secondary" placeholder="Gebruikersnaam..." />
+                    <span asp-validation-for="Username" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-4">
                     <label asp-for="Password" class="text-danger small fw-bold d-block mb-1"></label>
-                    <input asp-for="Password" class="form-control bg-dark text-white border-secondary" placeholder="Wachtwoord..." />
+                    <input asp-for="Password" class="form-control bg-dark text-white border-secondary" type="password" placeholder="Wachtwoord..." />
                     <span asp-validation-for="Password" class="text-danger small"></span>
                 </div>
 
-                @* De aangepaste knop *@
+                <div class="mb-3 form-check">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <label asp-for="RememberMe" class="form-check-label small text-white"></label>
+                </div>
+
                 <button type="submit" class="btn-tab active w-100 border-0 py-3">Inloggen</button>
             </form>
 
             <div class="text-center mt-4">
-                <a asp-controller="Home" asp-action="Index" class="text-secondary small text-decoration-none">
-                    <i class="bi bi-chevron-left"></i> Terug naar overzicht
+                <a href="/" class="text-secondary small text-decoration-none">
+                    <i class="bi bi-chevron-left"></i> Terug naar homepagina
                 </a>
             </div>
         </div>
