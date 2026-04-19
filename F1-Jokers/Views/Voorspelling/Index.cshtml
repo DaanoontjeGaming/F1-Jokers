@@ -5,6 +5,14 @@
         .OrderBy(c => c.Team != null ? c.Team.Teamnaam : "ZZZ")
         .ThenBy(c => c.Startnr)
         .ToList();
+
+    var gesorteerdeTeams = gesorteerdeCoureurs?
+        .Where(c => c.Team != null)
+        .Select(c => c.Team)
+        .GroupBy(t => t.Teamnaam)
+        .Select(g => g.First())
+        .OrderBy(t => t.Teamnaam)
+        .ToList();
 }
 
 <section class="race-info text-center mb-4">
@@ -52,7 +60,7 @@
 <div class="prediction-container d-flex gap-4 responsive-layout">
     
     <section class="column flex-grow-1 desktop-only" id="selection-pool" style="min-width: 300px;">
-        <h2 class="column-title border-bottom border-danger pb-2 mb-3">Coureurs</h2>
+        <h2 class="column-title border-bottom border-danger pb-2 mb-3">Keuzelijst</h2>
         
         <ul class="driver-list mb-4 race-pool list-unstyled" id="pool-main" ondrop="drop(event)" ondragover="allowDrop(event)">
             @if (gesorteerdeCoureurs != null)
@@ -78,10 +86,11 @@
                 {
                     foreach (var coureur in gesorteerdeCoureurs)
                     {
-                        <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center" draggable="true" ondragstart="drag(event)" id="sprint-c-@coureur.Startnr">
+                        <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center" draggable="true" ondragstart="drag(event)" id="main-c-@coureur.Startnr">
                             <div>
                                 <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; min-width: 25px;">@coureur.Startnr</span>
-                                <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
+                                <span class="dr-name" style="display: inline-block; min-width: 200px;">@coureur.Voornaam @coureur.Achternaam</span>
+                                <span class="dr-team">@coureur.Team?.Teamnaam</span>
                             </div>
                             <span class="dr-team small text-muted">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
                         </li>
@@ -89,6 +98,39 @@
                 }
             </ul>
         }
+
+        <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-season-drivers" ondrop="drop(event)" ondragover="allowDrop(event)">
+            @if (gesorteerdeCoureurs != null)
+            {
+                foreach (var coureur in gesorteerdeCoureurs)
+                {
+                    <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center" draggable="true" ondragstart="drag(event)" id="main-c-@coureur.Startnr">
+                        <div>
+                            <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; min-width: 25px;">@coureur.Startnr</span>
+                            <span class="dr-name" style="display: inline-block; min-width: 200px;">@coureur.Voornaam @coureur.Achternaam</span>
+                            <span class="dr-team">@coureur.Team?.Teamnaam</span>
+                        </div>
+                        <span class="dr-team small text-muted">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
+                    </li>
+                }
+            }
+        </ul>
+
+        <ul class="team-list mb-4 race-pool hide-section list-unstyled" id="pool-season-teams" ondrop="drop(event)" ondragover="allowDrop(event)">
+            @if (gesorteerdeTeams != null)
+            {
+                foreach (var team in gesorteerdeTeams)
+                {
+                    <li class="team-card border border-secondary p-2 mb-2 d-flex justify-content-between" draggable="true" ondragstart="drag(event)" id="main-t-@team.TeamId">
+                        <div>
+                            
+                            <span class="t-name" style="display: inline-block; min-width: 150px;">@team.Teamnaam</span>
+                            <span class="t-pu" style=" display: inline-block; min-width: 250px;">@team.Powerunit</span>
+                        </div>
+                    </li>
+                }
+            }
+        </ul>
     </section>
 
     <section class="column race-section flex-grow-1" id="main-race" style="min-width: 300px;">
@@ -98,9 +140,7 @@
             {
                 <div class="slot d-flex mb-2 align-items-center">
                     <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
-                    
                     <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="race-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
-                    
                     <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-main" id="mobile-race-pos@i">
                         <option value="">Kies coureur...</option>
                         @if (gesorteerdeCoureurs != null)
@@ -154,9 +194,7 @@
                 {
                     <div class="slot d-flex mb-2 align-items-center">
                         <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
-                        
                         <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="sprint-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
-
                         <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-sprint" id="mobile-sprint-pos@i">
                             <option value="">Kies coureur...</option>
                             @if (gesorteerdeCoureurs != null)
@@ -188,6 +226,111 @@
             </div>
         </section>
     }
+
+    <section class="column race-section hide-section flex-grow-1" id="season-drivers" style="min-width: 300px;">
+        <h2 class="column-title border-bottom border-danger pb-2 mb-3">Eindstand Coureurs (Top 10)</h2>
+        <div class="drop-zones mb-4">
+            @for (int i = 1; i <= 22; i++)
+            {
+                <div class="slot d-flex mb-2 align-items-center">
+                    <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
+                    <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="sdriver-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+                    <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-sdrivers" id="mobile-sdriver-pos@i">
+                        <option value="">Kies coureur...</option>
+                        @if (gesorteerdeCoureurs != null)
+                        {
+                            foreach (var c in gesorteerdeCoureurs)
+                            {
+                                <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+        </div>
+    </section>
+    <section class="column race-section hide-section flex-grow-1" id="season-teams" style="min-width: 300px;">
+        <h2 class="column-title border-bottom border-danger pb-2 mb-3">Eindstand Teams</h2>
+        <div class="drop-zones mb-4">
+            @for (int i = 1; i <= 11; i++)
+            {
+                <div class="slot d-flex mb-2 align-items-center">
+                    <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
+                    <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="steam-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+                    <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-steams" id="mobile-steam-pos@i">
+                        <option value="">Kies team...</option>
+                        @if (gesorteerdeTeams != null)
+                        {
+                            foreach (var t in gesorteerdeTeams)
+                            {
+                                <option value="@t.TeamId">@t.Teamnaam - @t.Powerunit</option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+        </div>
+
+        <div class="bonus-section mt-4 p-3 border border-secondary rounded">
+            <h3 class="column-title h5 text-white">Seizoen Extra</h3>
+            
+            <div class="mb-3">
+                <label class="text-danger small fw-bold d-block mb-1">Meeste Race Overwinningen</label>
+                <select class="form-select bg-dark text-white border-secondary">
+                    <option value="">Kies coureur...</option>
+                    @if (gesorteerdeCoureurs != null)
+                    {
+                        foreach (var c in gesorteerdeCoureurs)
+                        {
+                            <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="text-danger small fw-bold d-block mb-1">Meeste Sprint Overwinningen</label>
+                <select class="form-select bg-dark text-white border-secondary">
+                    <option value="">Kies coureur...</option>
+                    @if (gesorteerdeCoureurs != null)
+                    {
+                        foreach (var c in gesorteerdeCoureurs)
+                        {
+                            <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="text-danger small fw-bold d-block mb-1">Meeste Race Poles</label>
+                <select class="form-select bg-dark text-white border-secondary">
+                    <option value="">Kies coureur...</option>
+                    @if (gesorteerdeCoureurs != null)
+                    {
+                        foreach (var c in gesorteerdeCoureurs)
+                        {
+                            <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="mb-0">
+                <label class="text-danger small fw-bold d-block mb-1">Meeste Sprint Poles</label>
+                <select class="form-select bg-dark text-white border-secondary">
+                    <option value="">Kies coureur...</option>
+                    @if (gesorteerdeCoureurs != null)
+                    {
+                        foreach (var c in gesorteerdeCoureurs)
+                        {
+                            <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </section>
 </div>
 
 @section Scripts {
@@ -217,12 +360,12 @@
                 const originalElement = document.getElementById(originalId);
                 
                 if (originalElement) {
-                    originalElement.classList.remove('hide-section');
+                    originalElement.classList.remove('hide-section'); 
                 }
                 
                 const parentZone = draggedElement.parentNode;
-                parentZone.innerHTML = "...";
-                draggedElement.remove();
+                parentZone.innerHTML = "..."; 
+                draggedElement.remove(); 
                 return;
             }
 
@@ -268,11 +411,26 @@
             } else if (tabId === 'sprint-race') {
                 var poolSprint = document.getElementById('pool-sprint');
                 if(poolSprint) poolSprint.classList.remove('hide-section');
+            } else if (tabId === 'season-drivers') {
+                var poolSDrivers = document.getElementById('pool-season-drivers');
+                if(poolSDrivers) poolSDrivers.classList.remove('hide-section');
+            } else if (tabId === 'season-teams') {
+                var poolSTeams = document.getElementById('pool-season-teams');
+                if(poolSTeams) poolSTeams.classList.remove('hide-section');
             }
 
             document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
             if(event) {
                 event.currentTarget.classList.add('active');
+            }
+
+            const dlText = document.getElementById('deadline-text');
+            if(dlText) {
+                if (tabId.startsWith('season')) {
+                    dlText.innerText = 'Deadline Seizoen: 13 maart 2026 - 07:00 (Start Q1)';
+                } else {
+                    dlText.innerText = '@(Model.HuidigeKalenderItem != null ? "Deadline: " + Model.HuidigeKalenderItem.Deadline.ToString("dd MMMM yyyy - HH:mm", new System.Globalization.CultureInfo("nl-NL")) : "Geen data beschikbaar")';
+                }
             }
         }
 
@@ -294,6 +452,8 @@
             }
             setupMobileSelects('mobile-select-main');
             setupMobileSelects('mobile-select-sprint');
+            setupMobileSelects('mobile-select-sdrivers');
+            setupMobileSelects('mobile-select-steams');
         });
     </script>
 }
