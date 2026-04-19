@@ -78,6 +78,11 @@ body {
     .drop-target.desktop-only {
         display: flex !important;
     }
+
+    /* TIJDELIJKE FIX: Zorg dat drop zones altijd bestaan in DOM */
+    #selection-pool.desktop-only {
+        display: block !important;
+    }
 }
 
 @media (max-width: 767.98px) {

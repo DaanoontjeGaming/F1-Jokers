@@ -13,5 +13,6 @@ namespace F1Jokers.Data
         public DbSet<Coureur> Coureurs{ get; set; }
         public DbSet<Gebruiker> Gebruikers { get; set; }
         public DbSet<Kalender> Kalender { get; set; }
+        public DbSet<Voorspelling> Voorspellingen { get; set; }
     }
 }
