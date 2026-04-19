@@ -1,140 +1,245 @@
 ﻿@model F1Jokers.Models.VoorspellingViewModel
 
 <section class="race-info text-center mb-4">
-    <h1>@Model.RaceNaam</h1>
+    <div class="mb-4">
+        <form method="get" action="/Voorspelling/Index">
+            <select name="raceId" class="form-select bg-dark text-white border-secondary w-auto d-inline-block" onchange="this.form.submit()">
+                @if (Model.VolledigeKalender != null)
+                {
+                    foreach (var item in Model.VolledigeKalender)
+                    {
+                        if (Model.HuidigeKalenderItem != null && item.RaceID == Model.HuidigeKalenderItem.RaceID)
+                        {
+                            <option value="@item.RaceID" selected>@item.Racenaam</option>
+                        }
+                        else
+                        {
+                            <option value="@item.RaceID">@item.Racenaam</option>
+                        }
+                    }
+                }
+            </select>
+        </form>
+    </div>
     
     <div class="race-tabs btn-group mb-3">
         <button type="button" class="btn-tab active" onclick="switchView('main-race')">Hoofdrace</button>
-        <button type="button" class="btn-tab" onclick="switchView('sprint-race')">Sprintrace</button>
+        @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
+        {
+            <button type="button" class="btn-tab" onclick="switchView('sprint-race')">Sprintrace</button>
+        }
         <button type="button" class="btn-tab btn-season" onclick="switchView('season-drivers')">Seizoen Coureurs</button>
         <button type="button" class="btn-tab btn-season" onclick="switchView('season-teams')">Seizoen Teams</button>
     </div>
 
     <div class="deadline-container mb-3">
         <div id="deadline-status" class="deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold">
-            <i class="bi bi-clock-fill"></i> <span id="deadline-text">Selecteer een onderdeel</span>
+            <i class="bi bi-clock-fill"></i>
+            <span id="deadline-text">
+                @(Model.HuidigeKalenderItem != null ? "Deadline: " + Model.HuidigeKalenderItem.Deadline.ToString("dd MMMM yyyy - HH:mm", new System.Globalization.CultureInfo("nl-NL")) : "Geen data beschikbaar")
+            </span>
         </div>
     </div>
 </section>
 
-<div class="prediction-container">
-    <section class="column" id="selection-pool">
-        <div id="pool-drivers-wrapper">
-            <h2 class="column-title">Coureurs</h2>
-            <ul class="driver-list mb-4" id="pool-drivers" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <li class="driver-card" draggable="true" ondragstart="drag(event)" id="d1">
-                    <span class="dr-number">1</span>
-                    <span class="dr-name">Max Verstappen</span>
-                    <span class="dr-team">Red Bull Racing</span>
-                </li>
+<div class="prediction-container d-flex gap-4 flex-column flex-lg-row">
+    <section class="column flex-grow-1" id="selection-pool" style="min-width: 300px;">
+        <h2 class="column-title border-bottom border-danger pb-2 mb-3">Coureurs</h2>
+        
+        <ul class="driver-list mb-4 race-pool list-unstyled" id="pool-main" ondrop="drop(event)" ondragover="allowDrop(event)">
+            @if (Model.Coureurs != null)
+            {
+                foreach (var coureur in Model.Coureurs)
+                {
+                    <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center" draggable="true" ondragstart="drag(event)" id="main-c-@coureur.Startnr">
+                        <div>
+                            <span class="dr-number text-danger fw-bold me-2">@coureur.Startnr</span>
+                            <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
+                        </div>
+                        <span class="dr-team small text-muted">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
+                    </li>
+                }
+            }
+        </ul>
+
+        @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
+        {
+            <ul class="driver-list mb-4 race-pool d-none list-unstyled" id="pool-sprint" ondrop="drop(event)" ondragover="allowDrop(event)">
+                @if (Model.Coureurs != null)
+                {
+                    foreach (var coureur in Model.Coureurs)
+                    {
+                        <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center" draggable="true" ondragstart="drag(event)" id="sprint-c-@coureur.Startnr">
+                            <div>
+                                <span class="dr-number text-danger fw-bold me-2">@coureur.Startnr</span>
+                                <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
+                            </div>
+                            <span class="dr-team small text-muted">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
+                        </li>
+                    }
+                }
             </ul>
-        </div>
-        <div id="pool-teams-wrapper" class="d-none">
-            <h2 class="column-title">Teams</h2>
-            <ul class="driver-list" id="pool-teams" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <li class="driver-card team-card" draggable="true" ondragstart="drag(event)" id="t1">
-                    <span class="dr-name">Red Bull Racing</span>
-                </li>
-            </ul>
-        </div>
+        }
     </section>
 
-    <section class="column race-section" id="main-race">
-        <h2 class="column-title">Top 10 (Race)</h2>
+    <section class="column race-section flex-grow-1" id="main-race" style="min-width: 300px;">
+        <h2 class="column-title border-bottom border-danger pb-2 mb-3">Top 10 (Race)</h2>
         <div class="drop-zones mb-4">
             @for (int i = 1; i <= 10; i++)
             {
-                <div class="slot d-flex mb-2">
-                    <span class="pos-num">@i</span>
-                    <div class="drop-target" id="race-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)">...</div>
+                <div class="slot d-flex mb-2 align-items-center">
+                    <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
+                    <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2" id="race-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
                 </div>
             }
         </div>
         <div class="bonus-section mt-4 p-3 border border-secondary rounded">
-            <h3 class="column-title h5">Race Extra</h3>
+            <h3 class="column-title h5 text-white">Race Extra</h3>
             <div class="mb-3">
                 <label class="text-danger small fw-bold d-block mb-1">Pole Position</label>
-                <select class="form-select bg-dark text-white border-secondary"><option>Kies coureur...</option></select>
+                <select class="form-select bg-dark text-white border-secondary">
+                    <option value="">Kies coureur...</option>
+                    @if (Model.Coureurs != null)
+                    {
+                        foreach (var c in Model.Coureurs.OrderBy(x => x.Voornaam))
+                        {
+                            <option value="@c.Startnr">@c.Voornaam @c.Achternaam</option>
+                        }
+                    }
+                </select>
             </div>
             <div class="mb-0">
                 <label class="text-danger small fw-bold d-block mb-1">Snelste Ronde</label>
-                <select class="form-select bg-dark text-white border-secondary"><option>Kies coureur...</option></select>
+                <select class="form-select bg-dark text-white border-secondary">
+                    <option value="">Kies coureur...</option>
+                    @if (Model.Coureurs != null)
+                    {
+                        foreach (var c in Model.Coureurs.OrderBy(x => x.Voornaam))
+                        {
+                            <option value="@c.Startnr">@c.Voornaam @c.Achternaam</option>
+                        }
+                    }
+                </select>
             </div>
         </div>
     </section>
 
-    <section class="column race-section d-none" id="sprint-race">
-        <h2 class="column-title">Top 5 (Sprint)</h2>
-        <div class="drop-zones mb-4">
-            @for (int i = 1; i <= 5; i++)
-            {
-                <div class="slot d-flex mb-2">
-                    <span class="pos-num">@i</span>
-                    <div class="drop-target" id="sprint-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)">...</div>
-                </div>
-            }
-        </div>
-        <div class="bonus-section mt-4 p-3 border border-secondary rounded">
-            <h3 class="column-title h5">Sprint Extra</h3>
-            <div class="mb-0">
-                <label class="text-danger small fw-bold d-block mb-1">Sprint Pole</label>
-                <select class="form-select bg-dark text-white border-secondary"><option>Kies coureur...</option></select>
+    @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
+    {
+        <section class="column race-section d-none flex-grow-1" id="sprint-race" style="min-width: 300px;">
+            <h2 class="column-title border-bottom border-danger pb-2 mb-3">Top 5 (Sprint)</h2>
+            <div class="drop-zones mb-4">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <div class="slot d-flex mb-2 align-items-center">
+                        <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
+                        <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2" id="sprint-pos@i" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+                    </div>
+                }
             </div>
-        </div>
-    </section>
-
-    <section class="column race-section d-none" id="season-drivers">
-        <h2 class="column-title">Eindstand Coureurs</h2>
-        <div class="drop-zones mb-4">
-            @for (int i = 1; i <= 22; i++)
-            {
-                <div class="slot d-flex mb-1 small-slot">
-                    <span class="pos-num">@i</span>
-                    <div class="drop-target" id="season-dr-@i" ondrop="drop(event)" ondragover="allowDrop(event)">...</div>
-                </div>
-            }
-        </div>
-        <div class="bonus-section mt-4 p-3 border border-secondary rounded">
-            <h3 class="column-title h5">Seizoen Awards</h3>
-            <div class="row">
-                <div class="col-6 mb-3">
-                    <label class="text-danger small fw-bold d-block mb-1">Meeste Race Wins</label>
+            <div class="bonus-section mt-4 p-3 border border-secondary rounded">
+                <h3 class="column-title h5 text-white">Sprint Extra</h3>
+                <div class="mb-0">
+                    <label class="text-danger small fw-bold d-block mb-1">Sprint Pole</label>
                     <select class="form-select bg-dark text-white border-secondary">
-                        <option>Kies...</option>
-                    </select>
-                </div>
-                <div class="col-6 mb-3">
-                    <label class="text-danger small fw-bold d-block mb-1">Meeste Race Poles</label>
-                    <select class="form-select bg-dark text-white border-secondary">
-                        <option>Kies...</option>
-                    </select>
-                </div>
-                <div class="col-6">
-                    <label class="text-danger small fw-bold d-block mb-1">Meeste Sprint Wins</label>
-                    <select class="form-select bg-dark text-white border-secondary">
-                        <option>Kies...</option>
-                    </select>
-                </div>
-                <div class="col-6">
-                    <label class="text-danger small fw-bold d-block mb-1">Meeste Sprint Poles</label>
-                    <select class="form-select bg-dark text-white border-secondary">
-                        <option>Kies...</option>
+                        <option value="">Kies coureur...</option>
+                        @if (Model.Coureurs != null)
+                        {
+                            foreach (var c in Model.Coureurs.OrderBy(x => x.Voornaam))
+                            {
+                                <option value="@c.Startnr">@c.Voornaam @c.Achternaam</option>
+                            }
+                        }
                     </select>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section class="column race-section d-none" id="season-teams">
-        <h2 class="column-title">Eindstand Teams</h2>
-        <div class="drop-zones">
-            @for (int i = 1; i <= 11; i++)
-            {
-                <div class="slot d-flex mb-1 small-slot">
-                    <span class="pos-num">@i</span>
-                    <div class="drop-target" id="season-team-@i" ondrop="drop(event)" ondragover="allowDrop(event)">...</div>
-                </div>
-            }
-        </div>
-    </section>
+        </section>
+    }
 </div>
+@section Scripts {
+    <script>
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            if (!data) return;
+            
+            const draggedElement = document.getElementById(data);
+            const target = ev.target;
+            const dropZone = target.closest(".drop-target");
+            const pool = target.closest(".driver-list");
+
+            if (!draggedElement) return;
+
+            if (pool && data.startsWith("clone-")) {
+                const originalId = data.replace("clone-", "").split("-target")[0];
+                const originalElement = document.getElementById(originalId);
+                
+                if (originalElement) {
+                    originalElement.classList.remove('d-none');
+                }
+                
+                const parentZone = draggedElement.parentNode;
+                parentZone.innerHTML = "...";
+                draggedElement.remove();
+                return;
+            }
+
+            if (dropZone) {
+                if (dropZone.children.length > 0 && dropZone.innerText !== "...") {
+                    const existingClone = dropZone.children[0];
+                    if (existingClone && existingClone.id && existingClone.id.startsWith("clone-")) {
+                        const existingOriginalId = existingClone.id.replace("clone-", "").split("-target")[0];
+                        const existingOriginal = document.getElementById(existingOriginalId);
+                        if (existingOriginal) {
+                            existingOriginal.classList.remove('d-none');
+                        }
+                    }
+                }
+
+                if (data.startsWith("clone-")) {
+                    dropZone.innerHTML = "";
+                    dropZone.appendChild(draggedElement);
+                }
+                else {
+                    const clone = draggedElement.cloneNode(true);
+                    clone.id = "clone-" + data + "-target-" + dropZone.id;
+                    clone.setAttribute("ondragstart", "drag(event)");
+
+                    dropZone.innerHTML = "";
+                    dropZone.appendChild(clone);
+                    
+                    draggedElement.classList.add('d-none');
+                }
+            }
+        }
+
+        function switchView(tabId) {
+            document.querySelectorAll('.race-section').forEach(s => s.classList.add('d-none'));
+            const activeSection = document.getElementById(tabId);
+            if (activeSection) activeSection.classList.remove('d-none');
+
+            document.querySelectorAll('.race-pool').forEach(p => p.classList.add('d-none'));
+   
+            if (tabId === 'main-race') {
+                var poolMain = document.getElementById('pool-main');
+                if(poolMain) poolMain.classList.remove('d-none');
+            } else if (tabId === 'sprint-race') {
+                var poolSprint = document.getElementById('pool-sprint');
+                if(poolSprint) poolSprint.classList.remove('d-none');
+            }
+
+            document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+            if(event) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+    </script>
+}

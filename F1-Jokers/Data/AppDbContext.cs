@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using F1Jokers.Models; 
+using F1Jokers.Models;
 
 namespace F1Jokers.Data
 {
@@ -9,7 +9,9 @@ namespace F1Jokers.Data
         {
         }
 
-        // Jouw Datalaag: Koppelt de C# class 'Team' aan de MySQL tabel 'Teams'
         public DbSet<Team> Teams { get; set; }
+        public DbSet<Coureur> Coureurs{ get; set; }
+        public DbSet<Gebruiker> Gebruikers { get; set; }
+        public DbSet<Kalender> Kalender { get; set; }
     }
 }
