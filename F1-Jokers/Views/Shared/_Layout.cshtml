@@ -1,4 +1,5 @@
-﻿@{
+﻿@* Bepaalt of de huidige pagina de inlogpagina is om de navigatie en footer te verbergen *@
+@{
     var isLoginPage = ViewContext.RouteData.Values["controller"]?.ToString() == "Account" &&
                        ViewContext.RouteData.Values["action"]?.ToString() == "Inloggen";
 }
@@ -20,18 +21,23 @@
         <div class="header-nav-wrapper bg-dark border-bottom border-secondary sticky-top">
             <div class="container d-flex justify-content-between align-items-center p-2 p-md-3">
                 
-                <a href="/Voorspelling/Index" class="logo-link">
+                @* Logo linkt nu naar Home *@
+                <a asp-controller="Home" asp-action="Index" class="logo-link">
                     <img src="~/images/F1Jokers.png" alt="F1 Jokers Logo" class="app-logo" />
                 </a>
                 
                 <nav class="main-navigation">
                     <div class="nav-container d-flex gap-md-4">
-                        <a href="/" class="nav-item text-white text-decoration-none text-center">
+                        @* Home knop *@
+                        <a asp-controller="Home" asp-action="Index" class="nav-item text-white text-decoration-none text-center">
                             <i class="bi bi-house-door-fill"></i> <span class="nav-text">Home</span>
                         </a>
-                        <a href="/Voorspelling/Index" class="nav-item text-white text-decoration-none text-center">
+
+                        @* Voorspellen knop *@
+                        <a asp-controller="Voorspelling" asp-action="Index" class="nav-item text-white text-decoration-none text-center">
                             <i class="bi bi-gear-fill"></i> <span class="nav-text">Voorspellen</span>
                         </a>
+
                         <a href="#" class="nav-item text-white text-decoration-none text-center">
                             <i class="bi bi-trophy"></i> <span class="nav-text">Poule</span>
                         </a>
@@ -50,7 +56,9 @@
                     {
                         <span class="text-uppercase fw-bold text-white me-2">@User.Identity.Name</span>
                         <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i></button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </button>
                         </form>
                     }
                     else

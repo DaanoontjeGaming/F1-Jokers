@@ -4,18 +4,20 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Database Context toevoegen
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
 
-// Cookie Authenticatie
+// Jouw uitgebreide Authenticatie configuratie (Behouden)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.Cookie.Name = "F1Jokers.AuthCookie";
-        options.LoginPath = "/Account/Inloggen"; 
+        options.LoginPath = "/Account/Inloggen";
         options.AccessDeniedPath = "/Home/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromDays(3);
         options.SlidingExpiration = true;
@@ -23,10 +25,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.IsEssential = true;
     });
 
-builder.Services.AddHttpContextAccessor();
-
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -38,12 +39,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// DEZE TWEE MOETEN IN DEZE VOLGORDE STAAN
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Route configuratie: controller is nu ingesteld op Home
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Inloggen}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
