@@ -55,8 +55,16 @@
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <span class="text-uppercase fw-bold text-white me-2">@User.Identity.Name</span>
+        
+                        @if (User.IsInRole("Beheerder"))
+                        {
+                            <a asp-controller="Beheer" asp-action="Index" class="btn btn-sm btn-outline-warning me-2" title="Controlepaneel">
+                                <i class="bi bi-gear-wide-connected"></i>
+                            </a>
+                        }
+
                         <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Uitloggen">
                                 <i class="bi bi-box-arrow-right"></i>
                             </button>
                         </form>

@@ -358,7 +358,6 @@
 
             if (!draggedElement) return;
 
-            // Terugslepen naar lijst
             if (pool && data.startsWith("clone-")) {
                 const originalId = data.replace("clone-", "").split("-target")[0];
                 const originalElement = document.getElementById(originalId);
@@ -370,7 +369,6 @@
                 return;
             }
 
-            // In een vakje slepen
             if (dropZone) {
                 if (dropZone.children.length > 0 && dropZone.innerText !== "...") {
                     const existingClone = dropZone.children[0];
@@ -389,7 +387,6 @@
                     clone.id = "clone-" + data + "-target-" + dropZone.id;
                     clone.setAttribute("ondragstart", "drag(event)");
 
-                    // Zorg ervoor dat data-id attribuut behouden blijft
                     const originalDataId = draggedElement.getAttribute('data-id');
                     if (originalDataId) {
                         clone.setAttribute('data-id', originalDataId);
@@ -435,13 +432,11 @@
             }
         }
 
-        // SIMPELE DIRECTE AANPAK - lees ALLE selects uit en filter op class
+
         function getValuesFromSlots(desktopPrefix, count, mobilePrefix) {
             let result = [];
 
-            console.log(`\n=== getValuesFromSlots called for ${desktopPrefix} ===`);
 
-            // Bepaal welke class we zoeken voor MOBILE
             let targetClass = '';
             if (mobilePrefix === 'mobile-race-pos') {
                 targetClass = 'mobile-select-main';
@@ -453,29 +448,24 @@
                 targetClass = 'mobile-select-steams';
             }
 
-            console.log(`  Looking for mobile class: "${targetClass}"`);
 
             // Haal ALLE selects op met deze class
             const selects = document.querySelectorAll(`select.${targetClass}`);
-            console.log(`  Found ${selects.length} select elements with class "${targetClass}"`);
 
             // Loop door alle selects en lees hun waarden uit
             let foundMobileValues = false;
             selects.forEach((select, index) => {
                 const value = select.value ? select.value.trim() : "";
                 if (value !== "") foundMobileValues = true;
-                console.log(`  Mobile select ${index + 1}: ID="${select.id}" Value="${value}"`);
                 result.push(value);
             });
 
             // Als mobile selects leeg zijn, probeer DESKTOP drag & drop
             if (!foundMobileValues) {
-                console.log(`\n  Mobile selects empty, trying DESKTOP drag & drop...`);
                 result = []; // Reset result array
 
                 // Haal ALLE drop targets op
                 const allDropTargets = document.querySelectorAll('div.drop-target');
-                console.log(`  Found ${allDropTargets.length} total drop-target divs`);
 
                 // Filter op de juiste prefix
                 const relevantDropTargets = [];
@@ -485,7 +475,6 @@
                     }
                 });
 
-                console.log(`  Found ${relevantDropTargets.length} drop zones with prefix "${desktopPrefix}"`);
 
                 // Sorteer op positie nummer (race-pos1, race-pos2, etc.)
                 relevantDropTargets.sort((a, b) => {
@@ -498,11 +487,9 @@
                 relevantDropTargets.forEach((dropZone, index) => {
                     let startnr = "";
 
-                    console.log(`  Drop zone ${index + 1} (${dropZone.id}): children=${dropZone.children.length}`);
 
                     if (dropZone.children.length > 0) {
                         const card = dropZone.children[0];
-                        console.log(`    Card tagName: ${card.tagName}, classList: ${card.classList}`);
 
                         if (card.tagName === 'LI' && card.classList && 
                             (card.classList.contains('driver-card') || card.classList.contains('team-card'))) {
@@ -510,14 +497,12 @@
                             // Methode 1: data-id attribuut
                             if (card.hasAttribute('data-id')) {
                                 startnr = card.getAttribute('data-id');
-                                console.log(`    ✓ Found data-id: ${startnr}`);
                             }
                             // Methode 2: Extract from card ID
                             else if (card.id && card.id.includes('-c-')) {
                                 const match = card.id.match(/-c-(\d+)/);
                                 if (match && match[1]) {
                                     startnr = match[1];
-                                    console.log(`    ✓ Extracted from ID: ${startnr}`);
                                 }
                             }
                             // Methode 3: Lees .dr-number span
@@ -525,11 +510,9 @@
                                 const numberSpan = card.querySelector('.dr-number');
                                 if (numberSpan && numberSpan.innerText) {
                                     startnr = numberSpan.innerText.trim();
-                                    console.log(`    ✓ Read from .dr-number: ${startnr}`);
                                 }
                             }
                         } else {
-                            console.log(`    ✗ Not a valid driver/team card`);
                         }
                     }
 
@@ -543,15 +526,12 @@
             }
 
             const finalResult = result.join(",");
-            console.log(`\n✓✓✓ FINAL RESULT for ${desktopPrefix}: "${finalResult}" (${result.length} positions) ✓✓✓\n`);
             return finalResult;
         }
 
         // DEBUG FUNCTIE - Roep deze aan in de browser console: debugDropZones()
         function debugDropZones() {
-            console.log("=== DEBUG: Searching for ALL selects in the page ===");
             const allSelects = document.querySelectorAll('select');
-            console.log(`Found ${allSelects.length} select elements:`);
 
             // Filter alleen race-related selects
             const raceSelects = [];
@@ -560,7 +540,6 @@
                 const visible = select.offsetParent !== null;
                 const value = select.value || '(empty)';
 
-                console.log(`  ${index + 1}. ID: "${id}" | Value: "${value}" | Visible: ${visible} | Classes: "${select.className}"`);
 
                 // Verzamel race selects
                 if (id.includes('race-pos') || id.includes('mobile-race')) {
@@ -568,30 +547,7 @@
                 }
             });
 
-            console.log("\n=== RACE SELECTS FOUND ===");
-            raceSelects.forEach(s => {
-                console.log(`  ID: "${s.id}" | Value: "${s.value}" | Visible: ${s.visible}`);
-            });
 
-            console.log("\n=== TESTING getElementById ===");
-            for (let i = 1; i <= 3; i++) {
-                const testId = `mobile-race-pos${i}`;
-                const elem = document.getElementById(testId);
-                console.log(`  getElementById("${testId}"): ${elem ? 'FOUND ✓' : 'NOT FOUND ✗'}`);
-                if (elem) {
-                    console.log(`    Value: "${elem.value}"`);
-                }
-            }
-
-            console.log("\n=== TESTING querySelector ===");
-            for (let i = 1; i <= 3; i++) {
-                const testId = `mobile-race-pos${i}`;
-                const elem = document.querySelector(`#${testId}`);
-                console.log(`  querySelector("#${testId}"): ${elem ? 'FOUND ✓' : 'NOT FOUND ✗'}`);
-                if (elem) {
-                    console.log(`    Value: "${elem.value}"`);
-                }
-            }
         }
 
         async function verstuurVoorspelling() {
@@ -615,19 +571,6 @@
                 MeesteRacePolesStartnr: document.getElementById("season-most-poles")?.value || null,
                 MeesteSprintPolesStartnr: document.getElementById("season-most-sprint-poles")?.value || null
             };
-
-            // Debug voor jou: Open F12 in je browser om de getallen te zien!
-            console.log("=== DATA DIE NAAR API WORDT GESTUURD ===");
-            console.log("Dit wordt opgeslagen in de database:", data);
-            console.log("RaceTop10 waarde:", data.RaceTop10);
-            console.log("RaceTop10 lengte:", data.RaceTop10 ? data.RaceTop10.length : 0);
-
-            // Extra alert zodat je het ook ziet zonder F12
-            alert("DEBUG INFO:\n\n" + 
-                  "RaceTop10: " + data.RaceTop10 + "\n" +
-                  "Pole: " + data.PolePositionStartnr + "\n" +
-                  "Snelste Ronde: " + data.SnelsteRondeStartnr + "\n\n" +
-                  "Check de browser console (F12) voor meer details!");
 
 
             try {
