@@ -1,9 +1,7 @@
-﻿@* Bepaalt of de huidige pagina de inlogpagina is om de navigatie en footer te verbergen *@
-@{
+﻿@{
     var isLoginPage = ViewContext.RouteData.Values["controller"]?.ToString() == "Account" &&
                        ViewContext.RouteData.Values["action"]?.ToString() == "Inloggen";
 }
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -21,19 +19,16 @@
         <div class="header-nav-wrapper bg-dark border-bottom border-secondary sticky-top">
             <div class="container d-flex justify-content-between align-items-center p-2 p-md-3">
                 
-                @* Logo linkt nu naar Home *@
                 <a asp-controller="Home" asp-action="Index" class="logo-link">
                     <img src="~/images/F1Jokers.png" alt="F1 Jokers Logo" class="app-logo" />
                 </a>
                 
                 <nav class="main-navigation">
                     <div class="nav-container d-flex gap-md-4">
-                        @* Home knop *@
                         <a asp-controller="Home" asp-action="Index" class="nav-item text-white text-decoration-none text-center">
                             <i class="bi bi-house-door-fill"></i> <span class="nav-text">Home</span>
                         </a>
 
-                        @* Voorspellen knop *@
                         <a asp-controller="Voorspelling" asp-action="Index" class="nav-item text-white text-decoration-none text-center">
                             <i class="bi bi-gear-fill"></i> <span class="nav-text">Voorspellen</span>
                         </a>
@@ -51,6 +46,11 @@
                 </nav>
 
                 <div class="user-info text-end d-flex align-items-center">
+                    
+                    <button id="contrast-toggle" class="btn btn-sm btn-outline-warning me-3" onclick="toggleHighContrast()" aria-label="Wissel naar hoog contrast modus">
+                        <i class="bi bi-circle-half"></i> Contrast
+                    </button>
+                    
                     <i class="bi bi-person-circle text-danger fs-4 me-2"></i>
                     @if (User.Identity?.IsAuthenticated == true)
                     {
@@ -71,7 +71,9 @@
                     }
                     else
                     {
-                        <span class="text-uppercase fw-bold text-white">GASTBEZOEKER</span>
+                        <a asp-controller="Account" asp-action="Inloggen" class="btn btn-sm btn-danger fw-bold">
+                            <i class="bi bi-box-arrow-in-right"></i> Inloggen
+                        </a>
                     }
                 </div>
             </div>
@@ -94,6 +96,20 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
+
+    <script>
+            function toggleHighContrast() {
+                const body = document.body;
+                body.classList.toggle('high-contrast');
+                localStorage.setItem('highContrast', body.classList.contains('high-contrast'));
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                if (localStorage.getItem('highContrast') === 'true') {
+                    document.body.classList.add('high-contrast');
+                }
+            });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)</body>
 </html>

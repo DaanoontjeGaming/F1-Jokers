@@ -1,3 +1,6 @@
+/* =========================================
+   ROOT VARIABELEN & BASIS
+   ========================================= */
 :root {
     --f1-red: #e10600;
     --f1-black: #15151e;
@@ -22,6 +25,82 @@ body {
     margin: 0;
 }
 
+    /* =========================================
+   WCAG: HIGH CONTRAST MODUS
+   ========================================= */
+    body.high-contrast {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+    }
+
+        body.high-contrast .column,
+        body.high-contrast .driver-card,
+        body.high-contrast .race-banner,
+        body.high-contrast .drop-target,
+        body.high-contrast .form-select,
+        body.high-contrast .team-card,
+        body.high-contrast .bonus-section {
+            background-color: #000000 !important;
+            border: 3px solid #ffff00 !important;
+            color: #ffffff !important;
+        }
+
+        body.high-contrast .text-danger,
+        body.high-contrast .dr-number,
+        body.high-contrast .pos-num,
+        body.high-contrast .column-title {
+            color: #ffff00 !important;
+            background-color: #000000 !important;
+            border-color: #ffff00 !important;
+        }
+
+        body.high-contrast .btn-danger,
+        body.high-contrast .btn-tab.active {
+            background-color: #ffff00 !important;
+            color: #000000 !important;
+            border: 3px solid #ffffff !important;
+            font-weight: 900 !important;
+        }
+
+/* =========================================
+   WCAG: TOEGANKELIJKHEIDSMODUS (DROPDOWNS)
+   ========================================= */
+.force-accessible .desktop-only {
+    display: none !important;
+}
+
+.force-accessible .mobile-only {
+    display: block !important;
+}
+
+/* =========================================
+   SCROLLBARE COUREURSLIJST (WCAG REQ)
+   ========================================= */
+.scrollable-pool {
+    max-height: 520px; /* Hoogte voor ca. 10 coureurs */
+    overflow-y: auto;
+    padding-right: 5px;
+    border: 1px solid var(--f1-border);
+    border-radius: 4px;
+    background: rgba(0,0,0,0.2);
+}
+
+    .scrollable-pool::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .scrollable-pool::-webkit-scrollbar-track {
+        background: var(--f1-dark-grey);
+    }
+
+    .scrollable-pool::-webkit-scrollbar-thumb {
+        background: var(--f1-red);
+        border-radius: 4px;
+    }
+
+/* =========================================
+   NAVIGATIE & HEADER
+   ========================================= */
 .app-logo {
     height: 35px;
     width: auto;
@@ -42,120 +121,16 @@ body {
         color: var(--f1-red) !important;
     }
 
-    .nav-item i {
-        display: inline-block;
-        margin-right: 5px;
-        font-size: 1rem;
-    }
-
 .nav-text {
     font-size: 0.95rem;
     text-transform: uppercase;
 }
 
-/* RESPONSIVE TONEN/VERBERGEN */
+/* =========================================
+   LAYOUT & ALGEMENE CLASSES
+   ========================================= */
 .hide-section {
     display: none !important;
-}
-
-@media (min-width: 768px) {
-    .app-logo {
-        height: 45px;
-    }
-
-    .mobile-only {
-        display: none !important;
-    }
-
-    .desktop-only {
-        display: block !important;
-    }
-
-    .prediction-container.responsive-layout {
-        flex-direction: row !important;
-    }
-
-    .drop-target.desktop-only {
-        display: flex !important;
-    }
-
-    /* TIJDELIJKE FIX: Zorg dat drop zones altijd bestaan in DOM */
-    #selection-pool.desktop-only {
-        display: block !important;
-    }
-}
-
-@media (max-width: 767.98px) {
-    body {
-        padding-bottom: 80px;
-    }
-
-    .logo-link {
-        pointer-events: none;
-    }
-
-    .desktop-only {
-        display: none !important;
-    }
-
-    .mobile-only {
-        display: block !important;
-    }
-
-    .prediction-container.responsive-layout {
-        flex-direction: column !important;
-    }
-
-    .main-navigation {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: var(--f1-black);
-        border-top: 2px solid var(--f1-border);
-        z-index: 1050;
-        padding: 10px 0 5px 0;
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .nav-container {
-        justify-content: space-around !important;
-    }
-
-    .nav-item i {
-        display: block;
-        margin-right: 0;
-        margin-bottom: 2px;
-        font-size: 1.4rem;
-    }
-
-    .nav-text {
-        display: block;
-        font-size: 0.65rem;
-    }
-
-    footer {
-        margin-bottom: 70px;
-    }
-}
-
-.btn-tab {
-    background-color: var(--f1-dark-grey);
-    color: var(--f1-white);
-    border: 1px solid var(--f1-border);
-    padding: 10px 20px;
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-    .btn-tab.active {
-        background-color: var(--f1-red);
-        border-color: var(--f1-red);
-    }
-
-.prediction-container {
-    margin-top: 20px;
 }
 
 .column {
@@ -174,15 +149,31 @@ body {
     font-size: 1.1rem;
 }
 
-.driver-card {
+.btn-tab {
+    background-color: var(--f1-dark-grey);
+    color: var(--f1-white);
+    border: 1px solid var(--f1-border);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+    .btn-tab.active {
+        background-color: var(--f1-red);
+        border-color: var(--f1-red);
+    }
+
+/* =========================================
+   PREDICTION CARDS & SLOTS
+   ========================================= */
+.driver-card, .team-card {
     background-color: var(--f1-black);
     border: 1px solid var(--f1-border);
     border-left: 4px solid var(--f1-red);
     padding: 10px;
     margin-bottom: 8px;
     cursor: grab;
-    display: flex;
-    align-items: center;
 }
 
 .pos-num {
@@ -205,11 +196,88 @@ body {
     padding-left: 10px;
 }
 
-    .drop-target .driver-card {
+    .drop-target .driver-card, .drop-target .team-card {
         border: none;
         width: 100%;
         margin-bottom: 0;
     }
+
+/* =========================================
+   RESPONSIVE DESIGN (DESKTOP)
+   ========================================= */
+@media (min-width: 768px) {
+    .app-logo {
+        height: 45px;
+    }
+
+    .mobile-only {
+        display: none !important;
+    }
+
+    .desktop-only {
+        display: block !important;
+    }
+
+    .prediction-container.responsive-layout {
+        flex-direction: row !important;
+    }
+}
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBIEL)
+   ========================================= */
+@media (max-width: 767.98px) {
+    body {
+        padding-bottom: 80px; /* Ruimte voor menu onderaan */
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+
+    .prediction-container.responsive-layout {
+        flex-direction: column !important;
+    }
+
+    /* VASTGEPINDE NAVIGATIE ONDERAAN */
+    .main-navigation {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--f1-black);
+        border-top: 2px solid var(--f1-border);
+        z-index: 1050;
+        padding: 10px 0 5px 0;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-container {
+        justify-content: space-around !important;
+        display: flex;
+        width: 100%;
+    }
+
+    .nav-item i {
+        display: block;
+        margin-right: 0;
+        margin-bottom: 2px;
+        font-size: 1.4rem;
+    }
+
+    .nav-text {
+        display: block;
+        font-size: 0.65rem;
+    }
+
+    footer {
+        margin-bottom: 70px;
+    }
+}
 
 footer {
     padding: 20px 0;
