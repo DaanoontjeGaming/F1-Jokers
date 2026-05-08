@@ -6,15 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using F1Jokers.Data;
+using System;
 
 namespace F1Jokers.Controllers
 {
-    
     public class VoorspellingController : Controller
     {
-        // =========================================================================
-        // PROPERTIES & CONSTRUCTOR
-        // =========================================================================
         private readonly AppDbContext _context;
 
         public VoorspellingController(AppDbContext context)
@@ -22,10 +19,6 @@ namespace F1Jokers.Controllers
             _context = context;
         }
 
-
-        // =========================================================================
-        // HTTP GET - PAGE RENDERING
-        // =========================================================================
         [HttpGet]
         public IActionResult Index(string raceId)
         {
@@ -40,7 +33,7 @@ namespace F1Jokers.Controllers
             else
             {
                 model.HuidigeKalenderItem = _context.Kalender
-                    .Where(k => k.Deadline > System.DateTime.Now)
+                    .Where(k => k.Deadline > DateTime.Now)
                     .OrderBy(k => k.Datum)
                     .FirstOrDefault() ?? _context.Kalender.LastOrDefault();
             }
@@ -53,9 +46,12 @@ namespace F1Jokers.Controllers
                 {
                     string mainId = model.HuidigeKalenderItem.RaceID.Replace("S", "");
                     string sprintId = mainId + "S";
+                    string seizoenId = "Seizoen" + DateTime.Now.Year.ToString();
+
 
                     model.BestaandeVoorspellingen = _context.Voorspellingen
-                        .Where(v => v.GebruikerID == userId && (v.RaceID == mainId || v.RaceID == sprintId))
+                        .Where(v => v.GebruikerID == userId &&
+                                   (v.RaceID == mainId || v.RaceID == sprintId || v.RaceID == seizoenId))
                         .ToList();
                 }
             }
@@ -63,17 +59,10 @@ namespace F1Jokers.Controllers
             return View(model);
         }
 
-
-        // =========================================================================
-        // HTTP POST - API ENDPOINT (SAVE/UPDATE)
-        // =========================================================================
         [HttpPost]
         [Authorize]
         public IActionResult Opslaan([FromBody] VoorspellingSubmissionDto data)
         {
-            // -----------------------------------------------------------
-            // 1. VALIDATION & SETUP
-            // -----------------------------------------------------------
             if (data == null || string.IsNullOrEmpty(data.RaceId))
             {
                 return BadRequest(new { message = "De server kon de voorspelling niet verwerken." });
@@ -85,18 +74,15 @@ namespace F1Jokers.Controllers
 
             string mainId = data.RaceId.Replace("S", "");
             string sprintId = mainId + "S";
+            string seizoenId = "Seizoen" + DateTime.Now.Year.ToString();
 
-            // -----------------------------------------------------------
-            // 2. DATABASE PREPARATION (WIPE)
-            // -----------------------------------------------------------
+
             var oudeData = _context.Voorspellingen
-                .Where(v => v.GebruikerID == gebruikerId && (v.RaceID == mainId || v.RaceID == sprintId));
+                .Where(v => v.GebruikerID == gebruikerId &&
+                           (v.RaceID == mainId || v.RaceID == sprintId || v.RaceID == seizoenId));
 
             _context.Voorspellingen.RemoveRange(oudeData);
 
-            // -----------------------------------------------------------
-            // 3. DATA MAPPING (LOCAL HELPER & ASSIGNMENT)
-            // -----------------------------------------------------------
             var nieuweLijst = new List<Voorspelling>();
 
             void VoegToe(string rId, string type, int? nr)
@@ -113,6 +99,7 @@ namespace F1Jokers.Controllers
                 }
             }
 
+            // --- Race data ---
             if (!string.IsNullOrEmpty(data.RaceTop10))
             {
                 var arr = data.RaceTop10.Split(',');
@@ -125,6 +112,7 @@ namespace F1Jokers.Controllers
             VoegToe(mainId, "RacePole", data.PolePositionStartnr);
             VoegToe(mainId, "SnelsteRonde", data.SnelsteRondeStartnr);
 
+            // --- Sprint data ---
             if (!string.IsNullOrEmpty(data.SprintTop5))
             {
                 var arr = data.SprintTop5.Split(',');
@@ -136,13 +124,14 @@ namespace F1Jokers.Controllers
             }
             VoegToe(sprintId, "SprintPole", data.SprintPoleStartnr);
 
+            // --- Seizoensdata (Eindstand Coureurs & Teams) ---
             if (!string.IsNullOrEmpty(data.SeizoenCoureursTop10))
             {
                 var arr = data.SeizoenCoureursTop10.Split(',');
                 for (int i = 0; i < arr.Length; i++)
                 {
                     if (int.TryParse(arr[i], out int nr))
-                        VoegToe(mainId, $"SeizoenCPos{i + 1}", nr);
+                        VoegToe(seizoenId, $"SeizoenCPos{i + 1}", nr);
                 }
             }
 
@@ -152,18 +141,15 @@ namespace F1Jokers.Controllers
                 for (int i = 0; i < arr.Length; i++)
                 {
                     if (int.TryParse(arr[i], out int nr))
-                        VoegToe(mainId, $"SeizoenTPos{i + 1}", nr);
+                        VoegToe(seizoenId, $"SeizoenTPos{i + 1}", nr);
                 }
             }
 
-            VoegToe(mainId, "MeesteRaceWinst", data.MeesteRaceWinstStartnr);
-            VoegToe(mainId, "MeesteSprintWinst", data.MeesteSprintWinstStartnr);
-            VoegToe(mainId, "MeesteRacePoles", data.MeesteRacePolesStartnr);
-            VoegToe(mainId, "MeesteSprintPoles", data.MeesteSprintPolesStartnr);
+            VoegToe(seizoenId, "MeesteRaceWinst", data.MeesteRaceWinstStartnr);
+            VoegToe(seizoenId, "MeesteSprintWinst", data.MeesteSprintWinstStartnr);
+            VoegToe(seizoenId, "MeesteRacePoles", data.MeesteRacePolesStartnr);
+            VoegToe(seizoenId, "MeesteSprintPoles", data.MeesteSprintPolesStartnr);
 
-            // -----------------------------------------------------------
-            // 4. DATABASE COMMIT
-            // -----------------------------------------------------------
             _context.Voorspellingen.AddRange(nieuweLijst);
             _context.SaveChanges();
 
