@@ -1,0 +1,54 @@
+﻿@using F1Jokers.Models
+@{
+    ViewData["Title"] = "Home";
+    var volgendeRace = ViewBag.VolgendeRace as Kalender;
+}
+
+<div class="text-center mt-5">
+    <img src="~/images/F1Jokers.png" alt="F1 Jokers Logo" class="img-fluid mb-4" style="max-width: 300px;" />
+    
+    <h1 class="display-4 fw-bold text-danger">Welkom bij F1-Jokers!</h1>
+    <p class="lead">Hét platform waar je samen met vrienden de Formule 1 races kunt voorspellen.</p>
+
+    @if (volgendeRace != null)
+    {
+        // Vervang spaties door underscores voor een veilige bestandsnaam
+        // Bijv: "Dutch GP" wordt "Dutch_GP.png"
+        var imageName = volgendeRace.Racenaam.Replace(" ", "_");
+        var trackImagePath = $"/images/tracks/{imageName}.png";
+
+        <div class="mt-5 row justify-content-center">
+            <div class="col-md-8">
+                <div class="card bg-secondary text-white border-secondary shadow">
+                    <div class="card-header bg-dark border-secondary">
+                        <h3 class="card-title mb-0 text-danger">
+                            <i class="bi bi-calendar-event"></i> Eerstvolgende Race: @volgendeRace.Racenaam
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text fs-5">
+                            <strong>Racedatum:</strong> @volgendeRace.Datum.ToString("dd MMMM yyyy")<br />
+                            <strong>Deadline voorspellen:</strong> <span class="text-warning">@volgendeRace.Deadline.ToString("dd-MM-yyyy HH:mm")</span>
+                        </p>
+                        
+                        <div class="my-4 text-center bg-white p-3 rounded" style="display: inline-block;">
+                            <img src="@trackImagePath" alt="Track Layout van @volgendeRace.Racenaam" class="img-fluid" style="max-height: 250px;" />
+                        </div>
+
+                        <div class="mt-3">
+                            <a asp-controller="Voorspelling" asp-action="Index" class="btn btn-danger btn-lg">
+                                <i class="bi bi-gear-fill"></i> Plaats je voorspelling
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info mt-5 border-secondary bg-secondary text-white" role="alert">
+            <i class="bi bi-info-circle-fill"></i> Er staan momenteel geen aankomende races meer op de kalender. Het seizoen zit erop!
+        </div>
+    }
+</div>

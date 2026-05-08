@@ -42,7 +42,8 @@ namespace F1Jokers.Controllers
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.NameIdentifier, user.GebruikerID.ToString())
+                    new Claim(ClaimTypes.NameIdentifier, user.GebruikerID.ToString()),
+                    new Claim(ClaimTypes.Role, user.Rol) // <-- DIT IS DE NIEUWE REGEL
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
