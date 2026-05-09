@@ -20,7 +20,7 @@
     // Check de deadline voor de huidige geselecteerde race
     bool raceLocked = Model.HuidigeKalenderItem != null && DateTime.Now > Model.HuidigeKalenderItem.Deadline && !isAdmin;
     
-    // Check de deadline voor het seizoen (rechtstreeks via de database voor extra veiligheid)
+    // Check de deadline voor het seizoen
     var seizoenItem = DbContext.Kalender.FirstOrDefault(k => k.RaceID.StartsWith("Seizoen"));
     bool seasonLocked = seizoenItem != null && DateTime.Now > seizoenItem.Deadline && !isAdmin;
 }
@@ -371,35 +371,61 @@ else
 
     </div>
 
-    @* De knop en meldingen logica *@
-    @if (!raceLocked || !seasonLocked)
-    {
-        <div class="text-center mt-5 mb-5">
-            <button type="button" class="btn btn-lg btn-danger px-5 py-3 fw-bold shadow" onclick="verstuurVoorspelling()">
-                VOORSPELLING OPSLAAN
-            </button>
-            @if (raceLocked && !seasonLocked)
-            {
-                <p class="text-warning mt-2 small">Let op: De race is gesloten. Alleen seizoensvoorspellingen kunnen nog gewijzigd worden.</p>
-            }
-            else if (!raceLocked && seasonLocked)
-            {
-                <p class="text-warning mt-2 small">Let op: Seizoensvoorspellingen zijn gesloten en kunnen niet meer gewijzigd worden.</p>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-warning text-center mt-5 mb-5 fw-bold border-warning">
+    <div id="action-area" class="text-center mt-5 mb-5">
+        <button id="btn-opslaan" type="button" class="btn btn-lg btn-danger px-5 py-3 fw-bold shadow" onclick="verstuurVoorspelling()">
+            VOORSPELLING OPSLAAN
+        </button>
+
+        <div id="alert-gesloten" class="alert alert-warning text-center fw-bold border-warning" style="display: none; max-width: 800px; margin: 0 auto;">
             <i class="bi bi-lock-fill"></i> DE DEADLINE IS VERSTREKEN. JE KUNT JE VOORSPELLINGEN ALLEEN NOG BEKIJKEN.
         </div>
-    }
+    </div>
 }
 
 @section Scripts {
     <script src="~/js/voorspellen.js" asp-append-version="true"></script>
     <script>
+        // --- 1. DYNAMISCHE KNOP LOGICA ---
+        // Haal de status op vanuit C#
+        window.isRaceLocked = @(raceLocked.ToString().ToLower());
+        window.isSeasonLocked = @(seasonLocked.ToString().ToLower());
+
+        // Kap de originele switchView functie om de knop en melding te toggelen
+        const origineleSwitchView = window.switchView;
+        window.switchView = function (tabId) {
+            // Voer eerst de originele code uit om de tabbladen te wisselen
+            if (typeof origineleSwitchView === "function") {
+                origineleSwitchView(tabId);
+            }
+
+            // Bepaal of we naar een seizoens-tab of race-tab kijken
+            let isLocked = false;
+            if (tabId === 'season-drivers' || tabId === 'season-teams') {
+                isLocked = window.isSeasonLocked;
+            } else {
+                isLocked = window.isRaceLocked;
+            }
+
+            // Toon de knop OF de grote gele waarschuwing
+            const btnOpslaan = document.getElementById('btn-opslaan');
+            const alertGesloten = document.getElementById('alert-gesloten');
+
+            if (btnOpslaan && alertGesloten) {
+                if (isLocked) {
+                    btnOpslaan.style.display = 'none';
+                    alertGesloten.style.display = 'block';
+                } else {
+                    btnOpslaan.style.display = 'inline-block';
+                    alertGesloten.style.display = 'none';
+                }
+            }
+        };
+
+        // --- 2. INLADEN VAN BESTAANDE VOORSPELLINGEN ---
         document.addEventListener("DOMContentLoaded", function () {
+            // Zorg dat we direct checken of de eerste tab (main-race) open of dicht is!
+            window.switchView('main-race');
+
             const dbData = @Html.Raw(Json.Serialize(Model.BestaandeVoorspellingen));
             
             if (!dbData || dbData.length === 0) return;
@@ -410,7 +436,6 @@ else
                 
                 if (!typeV || dataId === "") return;
 
-                // 1. Bonus velden
                 const bonusMap = {
                     "RacePole": "bonus-pole", "SnelsteRonde": "bonus-fastest", "SprintPole": "bonus-sprint-pole",
                     "MeesteRaceWinst": "season-most-wins", "MeesteSprintWinst": "season-most-sprint-wins",
@@ -418,7 +443,6 @@ else
                 };
                 if (bonusMap[typeV]) { const el = document.getElementById(bonusMap[typeV]); if (el) el.value = dataId; return; }
 
-                // 2. Drag & Drop Mapping
                 let zoneId = "", poolId = "", mobId = "";
                 if (typeV.includes("RacePos")) { let n = typeV.replace("RacePos", ""); zoneId = "race-pos" + n; poolId = "pool-main"; mobId = "mobile-race-pos" + n; }
                 else if (typeV.includes("SprintPos")) { let n = typeV.replace("SprintPos", ""); zoneId = "sprint-pos" + n; poolId = "pool-sprint"; mobId = "mobile-sprint-pos" + n; }
@@ -434,6 +458,9 @@ else
                         clone.id = "clone-" + card.id + "-target-" + dropZone.id;
                         clone.setAttribute("ondragstart", "drag(event)");
                         clone.setAttribute("data-id", dataId);
+                        
+                        clone.classList.remove("hide-section");
+                        
                         dropZone.innerHTML = "";
                         dropZone.appendChild(clone);
                         card.classList.add("hide-section");
