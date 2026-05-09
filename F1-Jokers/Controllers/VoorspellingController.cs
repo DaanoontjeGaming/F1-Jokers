@@ -24,7 +24,12 @@ namespace F1Jokers.Controllers
         {
             var model = new VoorspellingViewModel();
             model.Coureurs = _context.Coureurs.Include(c => c.Team).ToList();
-            model.VolledigeKalender = _context.Kalender.OrderBy(k => k.Datum).ToList();
+
+            // AANGEPAST: Haal uitsluitend de normale 'Race' items op (geen Sprint, geen Seizoen)
+            model.VolledigeKalender = _context.Kalender
+                .Where(k => k.Racetype == "Race")
+                .OrderBy(k => k.Datum)
+                .ToList();
 
             if (!string.IsNullOrEmpty(raceId))
             {
@@ -32,10 +37,11 @@ namespace F1Jokers.Controllers
             }
             else
             {
+                // AANGEPAST: Zorg dat de standaard ingeladen race ook altijd een 'Race' is
                 model.HuidigeKalenderItem = _context.Kalender
-                    .Where(k => k.Deadline > DateTime.Now)
+                    .Where(k => k.Deadline > DateTime.Now && k.Racetype == "Race")
                     .OrderBy(k => k.Datum)
-                    .FirstOrDefault() ?? _context.Kalender.LastOrDefault();
+                    .FirstOrDefault() ?? _context.Kalender.Where(k => k.Racetype == "Race").LastOrDefault();
             }
 
             if (model.HuidigeKalenderItem != null)
@@ -48,7 +54,7 @@ namespace F1Jokers.Controllers
                     string sprintId = mainId + "S";
                     string seizoenId = "Seizoen" + DateTime.Now.Year.ToString();
 
-
+                    // Haal alle relevante data op voor deze race en het seizoen
                     model.BestaandeVoorspellingen = _context.Voorspellingen
                         .Where(v => v.GebruikerID == userId &&
                                    (v.RaceID == mainId || v.RaceID == sprintId || v.RaceID == seizoenId))
