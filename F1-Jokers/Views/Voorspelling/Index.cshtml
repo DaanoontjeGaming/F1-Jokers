@@ -6,7 +6,6 @@
         .ThenBy(c => c.Startnr)
         .ToList();
 
-    // FIX: We groeperen nog steeds op team, maar we gebruiken de eerste Coureur als 'vertegenwoordiger' van dat team!
     var gesorteerdeTeams = gesorteerdeCoureurs?
         .Where(c => c.Team != null)
         .GroupBy(c => c.Team.Teamnaam)
@@ -72,9 +71,9 @@ else
         </div>
     </section>
 
-    <div id="voorspel-container" class="prediction-container d-flex gap-4 responsive-layout">
+    <div id="voorspel-container" class="prediction-container d-flex justify-content-center gap-4 responsive-layout">
         
-        <section class="column desktop-only flex-shrink-0" id="selection-pool" style="width: 350px;">
+        <section class="column desktop-only" id="selection-pool" style="width: 420px; max-width: 100%;">
             <h2 class="column-title border-bottom border-danger pb-2 mb-3">Keuzelijst</h2>
             
             <div class="scrollable-pool">
@@ -83,13 +82,13 @@ else
                     {
                         foreach (var coureur in gesorteerdeCoureurs)
                         {
-                            <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center"
+                            <li class="driver-card border border-secondary p-2 mb-2 d-flex align-items-center"
                                 draggable="true" ondragstart="drag(event)" id="main-c-@coureur.Startnr" data-id="@coureur.Startnr">
-                                <div>
-                                    <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; min-width: 25px;">@coureur.Startnr</span>
-                                    <span class="dr-name" style="display: inline-block; min-width: 150px;">@coureur.Voornaam @coureur.Achternaam</span>
+                                <div style="width: 230px;">
+                                    <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; width: 25px;">@coureur.Startnr</span>
+                                    <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
                                 </div>
-                                <span class="dr-team small text-muted text-end">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
+                                <span class="dr-team small text-light opacity-75 text-nowrap">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
                             </li>
                         }
                     }
@@ -102,13 +101,13 @@ else
                         {
                             foreach (var coureur in gesorteerdeCoureurs)
                             {
-                                <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center"
+                                <li class="driver-card border border-secondary p-2 mb-2 d-flex align-items-center"
                                     draggable="true" ondragstart="drag(event)" id="sprint-c-@coureur.Startnr" data-id="@coureur.Startnr">
-                                    <div>
-                                        <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; min-width: 25px;">@coureur.Startnr</span>
-                                        <span class="dr-name" style="display: inline-block; min-width: 150px;">@coureur.Voornaam @coureur.Achternaam</span>
+                                    <div style="width: 230px;">
+                                        <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; width: 25px;">@coureur.Startnr</span>
+                                        <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
                                     </div>
-                                    <span class="dr-team small text-muted text-end">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
+                                    <span class="dr-team small text-light opacity-75 text-nowrap">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
                                 </li>
                             }
                         }
@@ -120,13 +119,13 @@ else
                     {
                         foreach (var coureur in gesorteerdeCoureurs)
                         {
-                            <li class="driver-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center"
+                            <li class="driver-card border border-secondary p-2 mb-2 d-flex align-items-center"
                                 draggable="true" ondragstart="drag(event)" id="sdriver-c-@coureur.Startnr" data-id="@coureur.Startnr">
-                                <div>
-                                    <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; min-width: 25px;">@coureur.Startnr</span>
-                                    <span class="dr-name" style="display: inline-block; min-width: 150px;">@coureur.Voornaam @coureur.Achternaam</span>
+                                <div style="width: 230px;">
+                                    <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; width: 25px;">@coureur.Startnr</span>
+                                    <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
                                 </div>
-                                <span class="dr-team small text-muted text-end">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
+                                <span class="dr-team small text-light opacity-75 text-nowrap">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
                             </li>
                         }
                     }
@@ -137,12 +136,12 @@ else
                     {
                         foreach (var teamRep in gesorteerdeTeams)
                         {
-                            <li class="team-card border border-secondary p-2 mb-2 d-flex justify-content-between align-items-center"
+                            <li class="team-card border border-secondary p-2 mb-2 d-flex align-items-center"
                                 draggable="true" ondragstart="drag(event)" id="team-c-@teamRep.Startnr" data-id="@teamRep.Startnr">
-                                <div>
-                                    <span class="dr-name fw-bold" style="display: inline-block; min-width: 150px;">@teamRep.Team.Teamnaam</span>
-                                    <span class="t-pu small text-muted">@teamRep.Team.Powerunit</span>
+                                <div style="width: 230px;">
+                                    <span class="dr-name fw-bold">@teamRep.Team.Teamnaam</span>
                                 </div>
+                                <span class="t-pu small text-light opacity-75 text-nowrap">@teamRep.Team.Powerunit</span>
                             </li>
                         }
                     }
@@ -150,7 +149,7 @@ else
             </div>
         </section>
 
-        <section class="column race-section flex-grow-1" id="main-race" style="min-width: 300px;">
+        <section class="column race-section" id="main-race" style="width: 420px; max-width: 100%;">
             <h2 class="column-title border-bottom border-danger pb-2 mb-3">Top 10 (Race)</h2>
             <div class="drop-zones mb-4">
                 @for (int i = 1; i <= 10; i++)
@@ -166,7 +165,7 @@ else
                             {
                                 foreach (var c in gesorteerdeCoureurs)
                                 {
-                                    <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                                    <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                                 }
                             }
                         </select>
@@ -183,7 +182,7 @@ else
                         {
                             foreach (var c in gesorteerdeCoureurs)
                             {
-                                <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam</option>
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                             }
                         }
                     </select>
@@ -196,7 +195,7 @@ else
                         {
                             foreach (var c in gesorteerdeCoureurs)
                             {
-                                <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam</option>
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                             }
                         }
                     </select>
@@ -206,7 +205,7 @@ else
 
         @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
         {
-            <section class="column race-section hide-section flex-grow-1" id="sprint-race" style="min-width: 300px;">
+            <section class="column race-section hide-section" id="sprint-race" style="width: 420px; max-width: 100%;">
                 <h2 class="column-title border-bottom border-danger pb-2 mb-3">Top 5 (Sprint)</h2>
                 <div class="drop-zones mb-4">
                     @for (int i = 1; i <= 5; i++)
@@ -221,7 +220,7 @@ else
                                 {
                                     foreach (var c in gesorteerdeCoureurs)
                                     {
-                                        <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                                        <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                                     }
                                 }
                             </select>
@@ -238,7 +237,7 @@ else
                             {
                                 foreach (var c in gesorteerdeCoureurs)
                                 {
-                                    <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                                    <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                                 }
                             }
                         </select>
@@ -247,7 +246,7 @@ else
             </section>
         }
 
-        <section class="column race-section hide-section flex-grow-1" id="season-drivers" style="min-width: 300px;">
+        <section class="column race-section hide-section" id="season-drivers" style="width: 420px; max-width: 100%;">
             <h2 class="column-title border-bottom border-danger pb-2 mb-3">Eindstand Coureurs (Top 22)</h2>
             <div class="drop-zones mb-4">
                 @for (int i = 1; i <= 22; i++)
@@ -262,7 +261,7 @@ else
                             {
                                 foreach (var c in gesorteerdeCoureurs)
                                 {
-                                    <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                                    <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                                 }
                             }
                         </select>
@@ -271,7 +270,7 @@ else
             </div>
         </section>
 
-        <section class="column race-section hide-section flex-grow-1" id="season-teams" style="min-width: 300px;">
+        <section class="column race-section hide-section" id="season-teams" style="width: 420px; max-width: 100%;">
             <h2 class="column-title border-bottom border-danger pb-2 mb-3">Eindstand Teams (Top 11)</h2>
             <div class="drop-zones mb-4">
                 @for (int i = 1; i <= 11; i++)
@@ -286,7 +285,7 @@ else
                             {
                                 foreach (var teamRep in gesorteerdeTeams)
                                 {
-                                    <option value="@teamRep.Startnr">@teamRep.Team.Teamnaam - @teamRep.Team.Powerunit</option>
+                                    <option value="@teamRep.Startnr">@teamRep.Team.Teamnaam &nbsp;&nbsp;|&nbsp;&nbsp; @teamRep.Team.Powerunit</option>
                                 }
                             }
                         </select>
@@ -304,7 +303,7 @@ else
                         {
                             foreach (var c in gesorteerdeCoureurs)
                             {
-                                <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                             }
                         }
                     </select>
@@ -317,7 +316,7 @@ else
                         {
                             foreach (var c in gesorteerdeCoureurs)
                             {
-                                <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                             }
                         }
                     </select>
@@ -330,7 +329,7 @@ else
                         {
                             foreach (var c in gesorteerdeCoureurs)
                             {
-                                <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                             }
                         }
                     </select>
@@ -343,7 +342,7 @@ else
                         {
                             foreach (var c in gesorteerdeCoureurs)
                             {
-                                <option value="@c.Startnr">@c.Startnr - @c.Voornaam @c.Achternaam @(c.Team != null ? " (" + c.Team.Teamnaam + ")" : "")</option>
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
                             }
                         }
                     </select>
@@ -365,11 +364,18 @@ else
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const dbData = @Html.Raw(Json.Serialize(Model.BestaandeVoorspellingen));
+            
+            // Console log om de data te checken (handig als controle!)
+            console.log("Inkomende data vanuit C#:", dbData);
+
             if (!dbData || dbData.length === 0) return;
 
             dbData.forEach(v => {
                 let typeV = (v.typeVoorspelling || v.TypeVoorspelling || "").trim();
-                let dataId = v.startNr ?? v.StartNr ?? "";
+                
+                // KOGELVRIJE FIX: Pakt altijd het ID, ongeacht of de database een hoofdletter gebruikt
+                let dataId = String(v.startNr ?? v.StartNr ?? v.startnr ?? "").trim();
+                
                 if (!typeV || dataId === "") return;
 
                 // 1. Bonus velden
@@ -390,6 +396,7 @@ else
                 if (zoneId && poolId) {
                     const dropZone = document.getElementById(zoneId);
                     const card = document.querySelector("#" + poolId + " li[data-id='" + dataId + "']");
+                    
                     if (dropZone && card) {
                         const clone = card.cloneNode(true);
                         clone.id = "clone-" + card.id + "-target-" + dropZone.id;
@@ -398,6 +405,8 @@ else
                         dropZone.innerHTML = "";
                         dropZone.appendChild(clone);
                         card.classList.add("hide-section");
+                    } else {
+                        console.warn("Kon HTML vakje of kaartje niet vinden voor:", typeV, "ID:", dataId);
                     }
                 }
                 if (mobId) { const el = document.getElementById(mobId); if (el) el.value = dataId; }
