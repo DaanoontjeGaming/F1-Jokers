@@ -78,14 +78,7 @@ function switchView(tabId) {
     document.querySelectorAll(".btn-tab").forEach(b => b.classList.remove("active"));
     if (event) event.currentTarget.classList.add("active");
 
-    const dlText = document.getElementById("deadline-text");
-    if (dlText) {
-        if (tabId.startsWith("season")) {
-            dlText.innerText = "Deadline Seizoen: 13 maart 2026 - 07:00 (Start Q1)";
-        } else {
-            dlText.innerText = "Deadline: Check kalender";
-        }
-    }
+    // HET PROBLEEM IS HIER VERWIJDERD! JavaScript past de deadline tekst niet meer aan.
 }
 
 function toggleAccessibilityMode() {
@@ -227,4 +220,3 @@ async function verstuurVoorspelling() {
         alert("Er ging iets mis met de verbinding naar de server.");
     }
 }
-

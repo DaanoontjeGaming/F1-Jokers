@@ -22,10 +22,10 @@ namespace F1Jokers.Controllers
         [HttpGet]
         public IActionResult Index(string raceId)
         {
-            var model = new VoorspellingViewModel();
+            // OPLOSSING: We gebruiken overal expliciete types in plaats van 'var'
+            VoorspellingViewModel model = new VoorspellingViewModel();
             model.Coureurs = _context.Coureurs.Include(c => c.Team).ToList();
 
-            // AANGEPAST: Haal uitsluitend de normale 'Race' items op (geen Sprint, geen Seizoen)
             model.VolledigeKalender = _context.Kalender
                 .Where(k => k.Racetype == "Race")
                 .OrderBy(k => k.Datum)
@@ -37,7 +37,6 @@ namespace F1Jokers.Controllers
             }
             else
             {
-                // AANGEPAST: Zorg dat de standaard ingeladen race ook altijd een 'Race' is
                 model.HuidigeKalenderItem = _context.Kalender
                     .Where(k => k.Deadline > DateTime.Now && k.Racetype == "Race")
                     .OrderBy(k => k.Datum)
@@ -46,15 +45,14 @@ namespace F1Jokers.Controllers
 
             if (model.HuidigeKalenderItem != null)
             {
-                var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                Claim? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-                if (int.TryParse(userIdString, out int userId))
+                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
                 {
                     string mainId = model.HuidigeKalenderItem.RaceID.Replace("S", "");
                     string sprintId = mainId + "S";
                     string seizoenId = "Seizoen" + DateTime.Now.Year.ToString();
 
-                    // Haal alle relevante data op voor deze race en het seizoen
                     model.BestaandeVoorspellingen = _context.Voorspellingen
                         .Where(v => v.GebruikerID == userId &&
                                    (v.RaceID == mainId || v.RaceID == sprintId || v.RaceID == seizoenId))
@@ -71,10 +69,10 @@ namespace F1Jokers.Controllers
         {
             if (data == null || string.IsNullOrEmpty(data.RaceId))
             {
-                return BadRequest(new { message = "De server kon de voorspelling niet verwerken." });
+                return BadRequest(new { message = "Ongeldige gegevens ontvangen." });
             }
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            Claim? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null) return Unauthorized();
             int gebruikerId = int.Parse(userIdClaim.Value);
 
@@ -82,14 +80,30 @@ namespace F1Jokers.Controllers
             string sprintId = mainId + "S";
             string seizoenId = "Seizoen" + DateTime.Now.Year.ToString();
 
+            // OPLOSSING: Kalender is nu expliciet getypeerd. Geen dynamic verwarring meer mogelijk!
+            Kalender? huidigeRace = _context.Kalender.FirstOrDefault(k => k.RaceID == mainId);
+            Kalender? huidigeSeizoen = _context.Kalender.FirstOrDefault(k => k.RaceID == seizoenId);
+            bool isAdmin = User.IsInRole("Beheerder");
 
-            var oudeData = _context.Voorspellingen
-                .Where(v => v.GebruikerID == gebruikerId &&
-                           (v.RaceID == mainId || v.RaceID == sprintId || v.RaceID == seizoenId));
+            if (!isAdmin && huidigeRace != null && DateTime.Now > huidigeRace.Deadline)
+            {
+                return BadRequest(new { message = "De deadline voor deze race is verstreken. Je kunt niets meer opslaan." });
+            }
 
-            _context.Voorspellingen.RemoveRange(oudeData);
+            // OPLOSSING: IQueryable en List expliciet getypeerd om de lambda error te voorkomen
+            IQueryable<Voorspelling> oudeDataQuery = _context.Voorspellingen.Where(v => v.GebruikerID == gebruikerId &&
+                (v.RaceID == mainId || v.RaceID == sprintId || v.RaceID == seizoenId));
 
-            var nieuweLijst = new List<Voorspelling>();
+            List<Voorspelling> oudeDataLijst = oudeDataQuery.ToList();
+
+            if (!isAdmin && huidigeSeizoen != null && DateTime.Now > huidigeSeizoen.Deadline)
+            {
+                oudeDataLijst = oudeDataLijst.Where(v => !v.RaceID.StartsWith("Seizoen")).ToList();
+            }
+
+            _context.Voorspellingen.RemoveRange(oudeDataLijst);
+
+            List<Voorspelling> nieuweLijst = new List<Voorspelling>();
 
             void VoegToe(string rId, string type, int? nr)
             {
@@ -105,56 +119,55 @@ namespace F1Jokers.Controllers
                 }
             }
 
-            // --- Race data ---
+            // 1. Race Voorspellingen
             if (!string.IsNullOrEmpty(data.RaceTop10))
             {
-                var arr = data.RaceTop10.Split(',');
+                string[] arr = data.RaceTop10.Split(',');
                 for (int i = 0; i < arr.Length; i++)
                 {
-                    if (int.TryParse(arr[i], out int nr))
-                        VoegToe(mainId, $"RacePos{i + 1}", nr);
+                    if (int.TryParse(arr[i], out int nr)) VoegToe(mainId, $"RacePos{i + 1}", nr);
                 }
             }
             VoegToe(mainId, "RacePole", data.PolePositionStartnr);
             VoegToe(mainId, "SnelsteRonde", data.SnelsteRondeStartnr);
 
-            // --- Sprint data ---
+            // 2. Sprint Voorspellingen
             if (!string.IsNullOrEmpty(data.SprintTop5))
             {
-                var arr = data.SprintTop5.Split(',');
+                string[] arr = data.SprintTop5.Split(',');
                 for (int i = 0; i < arr.Length; i++)
                 {
-                    if (int.TryParse(arr[i], out int nr))
-                        VoegToe(sprintId, $"SprintPos{i + 1}", nr);
+                    if (int.TryParse(arr[i], out int nr)) VoegToe(sprintId, $"SprintPos{i + 1}", nr);
                 }
             }
             VoegToe(sprintId, "SprintPole", data.SprintPoleStartnr);
 
-            // --- Seizoensdata (Eindstand Coureurs & Teams) ---
-            if (!string.IsNullOrEmpty(data.SeizoenCoureursTop10))
+            // 3. Seizoensvoorspellingen
+            if (isAdmin || (huidigeSeizoen != null && DateTime.Now <= huidigeSeizoen.Deadline))
             {
-                var arr = data.SeizoenCoureursTop10.Split(',');
-                for (int i = 0; i < arr.Length; i++)
+                if (!string.IsNullOrEmpty(data.SeizoenCoureursTop10))
                 {
-                    if (int.TryParse(arr[i], out int nr))
-                        VoegToe(seizoenId, $"SeizoenCPos{i + 1}", nr);
+                    string[] arr = data.SeizoenCoureursTop10.Split(',');
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        if (int.TryParse(arr[i], out int nr)) VoegToe(seizoenId, $"SeizoenCPos{i + 1}", nr);
+                    }
                 }
-            }
 
-            if (!string.IsNullOrEmpty(data.SeizoenTeamsTop11))
-            {
-                var arr = data.SeizoenTeamsTop11.Split(',');
-                for (int i = 0; i < arr.Length; i++)
+                if (!string.IsNullOrEmpty(data.SeizoenTeamsTop11))
                 {
-                    if (int.TryParse(arr[i], out int nr))
-                        VoegToe(seizoenId, $"SeizoenTPos{i + 1}", nr);
+                    string[] arr = data.SeizoenTeamsTop11.Split(',');
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        if (int.TryParse(arr[i], out int nr)) VoegToe(seizoenId, $"SeizoenTPos{i + 1}", nr);
+                    }
                 }
-            }
 
-            VoegToe(seizoenId, "MeesteRaceWinst", data.MeesteRaceWinstStartnr);
-            VoegToe(seizoenId, "MeesteSprintWinst", data.MeesteSprintWinstStartnr);
-            VoegToe(seizoenId, "MeesteRacePoles", data.MeesteRacePolesStartnr);
-            VoegToe(seizoenId, "MeesteSprintPoles", data.MeesteSprintPolesStartnr);
+                VoegToe(seizoenId, "MeesteRaceWinst", data.MeesteRaceWinstStartnr);
+                VoegToe(seizoenId, "MeesteSprintWinst", data.MeesteSprintWinstStartnr);
+                VoegToe(seizoenId, "MeesteRacePoles", data.MeesteRacePolesStartnr);
+                VoegToe(seizoenId, "MeesteSprintPoles", data.MeesteSprintPolesStartnr);
+            }
 
             _context.Voorspellingen.AddRange(nieuweLijst);
             _context.SaveChanges();

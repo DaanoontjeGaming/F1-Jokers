@@ -23,5 +23,7 @@ namespace F1Jokers.Models
         public string Racetype { get; set; }
         [Required]
         public bool HasSprintRace { get; set; }
+        public bool IsVerwerkt { get; set; } = false;
+        public bool IsAfgelast { get; set; } = false;
     }
 }

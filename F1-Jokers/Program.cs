@@ -25,6 +25,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.IsEssential = true;
     });
 
+builder.Services.AddHostedService<F1Jokers.Services.VoorspellingKopieerService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
