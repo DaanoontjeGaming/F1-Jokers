@@ -76,9 +76,8 @@ function switchView(tabId) {
     }
 
     document.querySelectorAll(".btn-tab").forEach(b => b.classList.remove("active"));
-    if (event) event.currentTarget.classList.add("active");
-
-    // HET PROBLEEM IS HIER VERWIJDERD! JavaScript past de deadline tekst niet meer aan.
+    const activeBtn = document.querySelector(`button[onclick="switchView('${tabId}')"]`);
+    if (activeBtn) activeBtn.classList.add("active");
 }
 
 function toggleAccessibilityMode() {

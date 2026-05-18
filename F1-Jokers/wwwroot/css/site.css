@@ -25,59 +25,69 @@ body {
     margin: 0;
 }
 
-    /* =========================================
+/* =========================================
    WCAG: HIGH CONTRAST MODUS
    ========================================= */
-    body.high-contrast {
-        background-color: #000000 !important;
-        color: #ffffff !important;
+/* Specificiteit verhoogd door html tag en dubbele class (.high-contrast.high-contrast) te gebruiken */
+html body.high-contrast.high-contrast {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+    html body.high-contrast.high-contrast section.column,
+    html body.high-contrast.high-contrast li.driver-card,
+    html body.high-contrast.high-contrast div.race-banner,
+    html body.high-contrast.high-contrast div.drop-target,
+    html body.high-contrast.high-contrast select.form-select,
+    html body.high-contrast.high-contrast li.team-card,
+    html body.high-contrast.high-contrast div.bonus-section {
+        background-color: #000000;
+        border: 3px solid #ffff00;
+        color: #ffffff;
     }
 
-        body.high-contrast .column,
-        body.high-contrast .driver-card,
-        body.high-contrast .race-banner,
-        body.high-contrast .drop-target,
-        body.high-contrast .form-select,
-        body.high-contrast .team-card,
-        body.high-contrast .bonus-section {
-            background-color: #000000 !important;
-            border: 3px solid #ffff00 !important;
-            color: #ffffff !important;
-        }
+    html body.high-contrast.high-contrast span.text-danger,
+    html body.high-contrast.high-contrast div.text-danger,
+    html body.high-contrast.high-contrast label.text-danger,
+    html body.high-contrast.high-contrast .dr-number,
+    html body.high-contrast.high-contrast span.pos-num,
+    html body.high-contrast.high-contrast h2.column-title,
+    html body.high-contrast.high-contrast h3.column-title {
+        color: #ffff00;
+        background-color: #000000;
+        border-color: #ffff00;
+    }
 
-        body.high-contrast .text-danger,
-        body.high-contrast .dr-number,
-        body.high-contrast .pos-num,
-        body.high-contrast .column-title {
-            color: #ffff00 !important;
-            background-color: #000000 !important;
-            border-color: #ffff00 !important;
-        }
-
-        body.high-contrast .btn-danger,
-        body.high-contrast .btn-tab.active {
-            background-color: #ffff00 !important;
-            color: #000000 !important;
-            border: 3px solid #ffffff !important;
-            font-weight: 900 !important;
-        }
+    html body.high-contrast.high-contrast button.btn-danger,
+    html body.high-contrast.high-contrast a.btn-danger,
+    html body.high-contrast.high-contrast button.btn-tab.active {
+        background-color: #ffff00;
+        color: #000000;
+        border: 3px solid #ffffff;
+        font-weight: 900;
+    }
 
 /* =========================================
    WCAG: TOEGANKELIJKHEIDSMODUS (DROPDOWNS)
    ========================================= */
-.force-accessible .desktop-only {
-    display: none !important;
+/* ID selector gebruikt voor maximale prioriteit */
+#voorspel-container.force-accessible .desktop-only {
+    display: none;
+    visibility: hidden;
+    position: absolute;
 }
 
-.force-accessible .mobile-only {
-    display: block !important;
+#voorspel-container.force-accessible .mobile-only {
+    display: block;
+    visibility: visible;
+    position: static;
 }
 
 /* =========================================
    SCROLLBARE COUREURSLIJST (WCAG REQ)
    ========================================= */
 .scrollable-pool {
-    max-height: 520px; /* Hoogte voor ca. 10 coureurs */
+    max-height: 520px;
     overflow-y: auto;
     padding-right: 5px;
     border: 1px solid var(--f1-border);
@@ -116,10 +126,12 @@ body {
     transition: color 0.2s, opacity 0.2s;
 }
 
-    .nav-item:hover, .nav-item.active {
-        opacity: 1;
-        color: var(--f1-red) !important;
-    }
+/* Meer specifiek gemaakt door parent class toe te voegen */
+html body .main-navigation .nav-item:hover,
+html body .main-navigation .nav-item.active {
+    opacity: 1;
+    color: var(--f1-red);
+}
 
 .nav-text {
     font-size: 0.95rem;
@@ -129,8 +141,19 @@ body {
 /* =========================================
    LAYOUT & ALGEMENE CLASSES
    ========================================= */
-.hide-section {
-    display: none !important;
+/* Kogelvrije methode om te verbergen zónder !important. */
+html body .hide-section {
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    pointer-events: none;
+    overflow: hidden;
 }
 
 .column {
@@ -210,16 +233,23 @@ body {
         height: 45px;
     }
 
-    .mobile-only {
-        display: none !important;
+    /* Valbeveiliging zodat hidden echt hidden is op desktop */
+    html body .mobile-only,
+    #voorspel-container .mobile-only {
+        display: none;
+        visibility: hidden;
+        position: absolute;
     }
 
-    .desktop-only {
-        display: block !important;
+    html body .desktop-only,
+    #voorspel-container .desktop-only {
+        display: block;
+        visibility: visible;
+        position: static;
     }
 
-    .prediction-container.responsive-layout {
-        flex-direction: row !important;
+    html body .prediction-container.responsive-layout {
+        flex-direction: row;
     }
 }
 
@@ -228,19 +258,25 @@ body {
    ========================================= */
 @media (max-width: 767.98px) {
     body {
-        padding-bottom: 80px; /* Ruimte voor menu onderaan */
+        padding-bottom: 80px;
     }
 
-    .desktop-only {
-        display: none !important;
+    html body .desktop-only,
+    #voorspel-container .desktop-only {
+        display: none;
+        visibility: hidden;
+        position: absolute;
     }
 
-    .mobile-only {
-        display: block !important;
+    html body .mobile-only,
+    #voorspel-container .mobile-only {
+        display: block;
+        visibility: visible;
+        position: static;
     }
 
-    .prediction-container.responsive-layout {
-        flex-direction: column !important;
+    html body .prediction-container.responsive-layout {
+        flex-direction: column;
     }
 
     /* VASTGEPINDE NAVIGATIE ONDERAAN */
@@ -256,8 +292,9 @@ body {
         padding-bottom: env(safe-area-inset-bottom);
     }
 
-    .nav-container {
-        justify-content: space-around !important;
+    html body header .nav-container,
+    html body .main-navigation .nav-container {
+        justify-content: space-around;
         display: flex;
         width: 100%;
     }

@@ -88,7 +88,7 @@ else
             <h2 class="column-title border-bottom border-danger pb-2 mb-3">Keuzelijst</h2>
             
             <div class="scrollable-pool">
-                <ul class="driver-list mb-4 race-pool list-unstyled" id="pool-main">
+                <ul class="driver-list mb-4 race-pool list-unstyled" id="pool-main" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 100px;">
                     @if (gesorteerdeCoureurs != null)
                     {
                         foreach (var coureur in gesorteerdeCoureurs)
@@ -109,7 +109,7 @@ else
 
                 @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
                 {
-                    <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-sprint">
+                    <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-sprint" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 100px;">
                         @if (gesorteerdeCoureurs != null)
                         {
                             foreach (var coureur in gesorteerdeCoureurs)
@@ -129,7 +129,7 @@ else
                     </ul>
                 }
 
-                <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-season-drivers">
+                <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-season-drivers" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 100px;">
                     @if (gesorteerdeCoureurs != null)
                     {
                         foreach (var coureur in gesorteerdeCoureurs)
@@ -148,7 +148,7 @@ else
                     }
                 </ul>
 
-                <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-season-teams">
+                <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-season-teams" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 100px;">
                     @if (gesorteerdeTeams != null)
                     {
                         foreach (var teamRep in gesorteerdeTeams)
@@ -385,20 +385,15 @@ else
 @section Scripts {
     <script src="~/js/voorspellen.js" asp-append-version="true"></script>
     <script>
-        // --- 1. DYNAMISCHE KNOP LOGICA ---
-        // Haal de status op vanuit C#
         window.isRaceLocked = @(raceLocked.ToString().ToLower());
         window.isSeasonLocked = @(seasonLocked.ToString().ToLower());
 
-        // Kap de originele switchView functie om de knop en melding te toggelen
         const origineleSwitchView = window.switchView;
         window.switchView = function (tabId) {
-            // Voer eerst de originele code uit om de tabbladen te wisselen
             if (typeof origineleSwitchView === "function") {
                 origineleSwitchView(tabId);
             }
 
-            // Bepaal of we naar een seizoens-tab of race-tab kijken
             let isLocked = false;
             if (tabId === 'season-drivers' || tabId === 'season-teams') {
                 isLocked = window.isSeasonLocked;
@@ -406,24 +401,27 @@ else
                 isLocked = window.isRaceLocked;
             }
 
-            // Toon de knop OF de grote gele waarschuwing
             const btnOpslaan = document.getElementById('btn-opslaan');
             const alertGesloten = document.getElementById('alert-gesloten');
+            const selectionPool = document.getElementById('selection-pool');
 
             if (btnOpslaan && alertGesloten) {
                 if (isLocked) {
+
                     btnOpslaan.style.display = 'none';
                     alertGesloten.style.display = 'block';
+                    if (selectionPool) selectionPool.style.display = 'none';
                 } else {
+
                     btnOpslaan.style.display = 'inline-block';
                     alertGesloten.style.display = 'none';
+                    if (selectionPool) selectionPool.style.display = '';
                 }
             }
         };
 
-        // --- 2. INLADEN VAN BESTAANDE VOORSPELLINGEN ---
+ 
         document.addEventListener("DOMContentLoaded", function () {
-            // Zorg dat we direct checken of de eerste tab (main-race) open of dicht is!
             window.switchView('main-race');
 
             const dbData = @Html.Raw(Json.Serialize(Model.BestaandeVoorspellingen));
