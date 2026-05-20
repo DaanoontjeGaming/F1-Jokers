@@ -19,19 +19,25 @@ namespace F1Jokers.Services
             _context = context;
         }
 
-        public async Task HaalEnVerwerkLaatsteRaceAsync()
+        // De correcte naam van de methode, inclusief de string apiRound parameter
+        public async Task HaalEnVerwerkRaceAsync(string apiRound)
         {
-            // 1. Haal de Race Resultaten op
-            var resultsResponse = await _httpClient.GetStringAsync("https://api.jolpi.ca/ergast/f1/current/last/results.json");
+            // 1. Haal de Race Resultaten op voor de SPECIFIEKE ronde
+            var resultsResponse = await _httpClient.GetStringAsync($"https://api.jolpi.ca/ergast/f1/current/{apiRound}/results.json");
             using var resultsDoc = JsonDocument.Parse(resultsResponse);
 
-            var raceNode = resultsDoc.RootElement
+            var racesElement = resultsDoc.RootElement
                 .GetProperty("MRData")
                 .GetProperty("RaceTable")
-                .GetProperty("Races")[0];
+                .GetProperty("Races");
 
-            // Om de juiste endpoints voor Quali en Sprint aan te roepen, gebruiken we de API-ronde (bijv. "4")
-            string apiRound = raceNode.GetProperty("round").GetString();
+            // Veiligheidscheck: is deze race überhaupt al verreden?
+            if (racesElement.GetArrayLength() == 0)
+            {
+                throw new Exception($"Geen uitslagen gevonden voor ronde {apiRound}. Is deze race al verreden?");
+            }
+
+            var raceNode = racesElement[0];
 
             // We lezen de datum van de race uit de API en koppelen die aan jouw database
             string apiDateString = raceNode.GetProperty("date").GetString();
@@ -52,7 +58,7 @@ namespace F1Jokers.Services
             if (bestaandeUitslagen.Any())
             {
                 _context.Uitslagen.RemoveRange(bestaandeUitslagen);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // Direct opslaan zodat sleutels vrijkomen
             }
 
             // 2. Verwerk Race Posities (1 t/m 10) en Snelste Ronde
@@ -136,7 +142,7 @@ namespace F1Jokers.Services
                         {
                             _context.Uitslagen.Add(new Uitslag
                             {
-                                RaceID = sprintRaceId, // Gebruik hier het 6S ID
+                                RaceID = sprintRaceId,
                                 TypeResultaat = $"SprintPos{positie}",
                                 StartNr = startNr
                             });
@@ -147,7 +153,7 @@ namespace F1Jokers.Services
                         {
                             _context.Uitslagen.Add(new Uitslag
                             {
-                                RaceID = sprintRaceId, // Gebruik hier het 6S ID
+                                RaceID = sprintRaceId,
                                 TypeResultaat = "SprintPole",
                                 StartNr = startNr
                             });

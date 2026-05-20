@@ -31,7 +31,13 @@
                     
                     <form asp-controller="Beheer" asp-action="HaalUitslagenOp" method="post">
                         @Html.AntiForgeryToken() 
-                        <button type="submit" class="btn btn-warning fw-bold btn-sm mt-2">
+    
+                        <div class="input-group input-group-sm mb-3 mt-3">
+                            <span class="input-group-text bg-dark text-white border-secondary">Ronde</span>
+                            <input type="number" name="apiRound" class="form-control bg-dark text-white border-secondary" placeholder="Bijv. 6" required min="1" max="25">
+                        </div>
+
+                        <button type="submit" class="btn btn-warning fw-bold btn-sm w-100">
                             <i class="bi bi-download me-1"></i> Nu Ophalen
                         </button>
                     </form>
