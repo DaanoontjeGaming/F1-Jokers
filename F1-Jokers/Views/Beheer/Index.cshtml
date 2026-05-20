@@ -6,16 +6,44 @@
     <h1 class="text-danger"><i class="bi bi-gear-wide-connected"></i> Beheerder Controlepaneel</h1>
     <p class="lead">Welkom terug, @User.Identity?.Name. Hier kun je de race-instellingen en gebruikers beheren.</p>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="row mt-4">
         <div class="col-md-4">
             <div class="card bg-secondary text-white border-secondary mb-3">
                 <div class="card-body text-center">
-                    <i class="bi bi-flag-fill fs-1"></i>
-                    <h5 class="card-title mt-2">Uitslagen Invullen</h5>
-                    <p class="card-text small">Voer de officiële uitslagen van de laatste race in.</p>
-                    <button class="btn btn-danger btn-sm">Openen</button>
+                    <i class="bi bi-cloud-arrow-down-fill fs-1 text-warning"></i>
+                    <h5 class="card-title mt-2">Uitslagen Ophalen API</h5>
+                    <p class="card-text small">Haal de officiële uitslagen van het afgelopen weekend op via Jolpica en bereken de poule-punten.</p>
+                    
+                    <form asp-controller="Beheer" asp-action="HaalUitslagenOp" method="post">
+                        @Html.AntiForgeryToken() 
+    
+                        <div class="input-group input-group-sm mb-3 mt-3">
+                            <span class="input-group-text bg-dark text-white border-secondary">Ronde</span>
+                            <input type="number" name="apiRound" class="form-control bg-dark text-white border-secondary" placeholder="Bijv. 6" required min="1" max="25">
+                        </div>
+
+                        <button type="submit" class="btn btn-warning fw-bold btn-sm w-100">
+                            <i class="bi bi-download me-1"></i> Nu Ophalen
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
+        
+        </div>
 </div>
