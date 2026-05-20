@@ -21,7 +21,7 @@ namespace F1Jokers.Controllers
         {
             if (User.Identity?.IsAuthenticated == true)
             {
-                return RedirectToAction("Index", "Voorspelling");
+                return RedirectToAction("Index", "Home");
             }
             return View();
         }
@@ -59,7 +59,7 @@ namespace F1Jokers.Controllers
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
 
-                return RedirectToAction("Index", "Voorspelling");
+                return RedirectToAction("Index", "Home");
             }
 
             ModelState.AddModelError(string.Empty, "Onjuiste gebruikersnaam of wachtwoord.");

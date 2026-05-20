@@ -5,44 +5,43 @@ using F1Jokers.Services;
 
 namespace F1Jokers.Controllers
 {
-    // De 'uitsmijter' die controleert of de gebruiker de rol 'Beheerder' heeft
     [Authorize(Roles = "Beheerder")]
     public class BeheerController : Controller
     {
+        // --- Fields ---
         private readonly F1ApiService _f1ApiService;
         private readonly PuntenService _puntenService;
 
-        // Beide services worden hier succesvol binnengehaald
+        // --- Constructor ---
         public BeheerController(F1ApiService f1ApiService, PuntenService puntenService)
         {
             _f1ApiService = f1ApiService;
             _puntenService = puntenService;
         }
 
+        // --- Actions ---
         public IActionResult Index()
         {
             return View();
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken] // Beveiliging tegen CSRF-aanvallen
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> HaalUitslagenOp(string apiRound)
         {
             if (string.IsNullOrWhiteSpace(apiRound))
             {
-                TempData["ErrorMessage"] = "Vul a.u.b. een geldig ronde-nummer in.";
+                TempData["ErrorMessage"] = "Vul a.u.b. een geldig RaceID in.";
                 return RedirectToAction("Index");
             }
 
             try
             {
-                // Stap 1: Haal de uitslagen op via de Jolpica API
-                await _f1ApiService.HaalEnVerwerkRaceAsync(apiRound);
+                string lokaalRaceId = await _f1ApiService.HaalEnVerwerkRaceAsync(apiRound);
+                await _puntenService.BerekenPuntenVoorRaceAsync(lokaalRaceId);
+                await _puntenService.BerekenPuntenVoorRaceAsync(lokaalRaceId + "S");
 
-                // Stap 2: Bereken direct automatisch de punten voor deze race
-                await _puntenService.BerekenPuntenVoorRaceAsync(apiRound);
-
-                TempData["SuccessMessage"] = $"De uitslagen en de poule-punten voor ronde {apiRound} zijn succesvol verwerkt!";
+                TempData["SuccessMessage"] = $"De uitslagen, punten én flessen zijn succesvol verwerkt voor Grand Prix {apiRound} (Lokaal ID: {lokaalRaceId})!";
             }
             catch (System.Exception ex)
             {
