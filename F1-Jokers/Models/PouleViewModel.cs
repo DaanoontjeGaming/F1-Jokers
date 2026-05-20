@@ -7,22 +7,19 @@ namespace F1Jokers.Models
     public class PouleViewModel
     {
         public List<GebruikerKlassementItem> Ranglijst { get; set; } = new();
-        public string AlgemenePouleNaam { get; set; } = "F1-Jokers Algemeen Klassement";
+        public string AlgemenePouleNaam { get; set; } = "F1-Jokers Poule tussenstand";
 
-        // Voor de dropdown
         public string SelectedRaceId { get; set; }
         public List<Kalender> VolledigeKalender { get; set; } = new();
     }
 
-    // 2. DIT IS HET ONTBREKENDE MODEL! 
-    // Dit vertelt C# exact wat een 'GebruikerKlassementItem' is.
     public class GebruikerKlassementItem
     {
         public int Positie { get; set; }
         public string Username { get; set; }
         public int TotalePunten { get; set; }
         public int VerschilVorigGPWeekend { get; set; }
-
         public int AantalChampagneFlessen { get; set; }
+        public int PuntenGeselecteerdeGP { get; set; }
     }
 }

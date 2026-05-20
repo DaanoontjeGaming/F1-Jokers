@@ -16,7 +16,7 @@
     
     <div class="text-center mb-5">
         <h1 class="display-5 text-white fw-bold uppercase" style="letter-spacing: 1px;">
-            <i class="bi bi-trophy-fill text-warning me-2"></i> @(Model?.AlgemenePouleNaam ?? "F1-Jokers Algemeen Klassement")
+            <i class="bi bi-trophy-fill text-warning me-2"></i> @(Model?.AlgemenePouleNaam ?? "F1-Jokers Poule tussenstand")
         </h1>
         <p class="text-light opacity-75 mb-4">Wie heeft de beste voorspellingen en kroont zichzelf tot de ultieme F1-Joker?</p>
         
@@ -131,7 +131,6 @@
     <div class="row justify-content-center">
         <div class="col-12 col-lg-10">
             <div class="column">
-                <h2 class="column-title"><i class="bi bi-list-ol me-2"></i> Klassement overzicht</h2>
                 
                 <div class="table-responsive">
                     <table class="table table-dark table-hover align-middle mb-0" style="background-color: transparent;">
@@ -140,7 +139,7 @@
                                 <th style="width: 70px;" class="text-center">Pos</th>
                                 <th style="width: 60px;" class="text-center"></th>
                                 <th>Deelnemer</th>
-                                <th style="width: 150px;" class="text-end">Totaal Punten</th>
+                                <th style="width: 130px;" class="text-end">Totaal Punten</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -150,7 +149,7 @@
                                 {
                                     bool isTop3 = speler.Positie <= 3;
                                     <tr class="@(isTop3 ? "bg-opacity-10 bg-danger" : "") border-bottom border-secondary">
-                                        
+                        
                                         <td class="text-center">
                                             @if (speler.Positie == 1)
                                             {
@@ -172,7 +171,7 @@
                                                 <span class="fw-bold text-light opacity-50">@speler.Positie</span>
                                             }
                                         </td>
-                                        
+                        
                                         <td class="text-center">
                                             @if (speler.VerschilVorigGPWeekend > 0)
                                             {
@@ -187,39 +186,50 @@
                                                 <span class="text-light opacity-25 small"><i class="bi bi-dash-lg"></i></span>
                                             }
                                         </td>
-                                        
+                        
                                         <td>
                                             <div class="d-flex align-items-center justify-content-between w-100">
                                                 <div class="d-flex align-items-center">
                                                     <i class="bi bi-person-circle fs-5 me-2 text-light opacity-50"></i>
                                                     <span class="fw-bold text-white me-2">@speler.Username</span>
                                                 </div>
-                                                
+                                
                                                 @if (speler.AantalChampagneFlessen > 0)
                                                 {
                                                     <div class="position-relative d-inline-block pe-1" style="width: 26px; height: 65px; vertical-align: middle;" title="@speler.AantalChampagneFlessen x Meeste punten in een GP weekend!">
-                                                        <img src="~/images/Champagne.png" alt="Champagne" style="width: 220%; height: 90%; display: block;" />
-                                                        
+                                                        <img src="~/images/Champagne.png" alt="Champagne" style="width: 250%; height: 90%; display: block;" />
+                                        
                                                         <span class="position-absolute fw-bold text-dark d-flex align-items-center justify-content-center shadow-sm"
-                                                              style="top: 60%; left: 95%; transform: translate(-50%, -50%); background: #fff3cd; border: 1px solid #b8860b; border-radius: 50%; width: 16px; height: 16px; font-size: 0.7rem; font-family: sans-serif; line-height: 1; z-index: 2;">
+                                                              style="top: 60%; left: 105%; transform: translate(-50%, -50%); background: #fff3cd; border: 1px solid #b8860b; border-radius: 50%; width: 16px; height: 16px; font-size: 0.7rem; font-family: sans-serif; line-height: 1; z-index: 2;">
                                                             @speler.AantalChampagneFlessen
                                                         </span>
                                                     </div>
                                                 }
                                             </div>
                                         </td>
-                                        
+                        
                                         <td class="text-end pe-3">
                                             <span class="fw-bold text-danger fs-5">@speler.TotalePunten</span> <span class="small text-light opacity-50">ptn</span>
                                         </td>
-                                        
+
+                                        <td class="text-start ps-2 align-middle" style="max-width: 20px;">
+                                            @if (speler.PuntenGeselecteerdeGP > 0)
+                                            {
+                                                <span class="text-success fw-bold fs-5">(+@speler.PuntenGeselecteerdeGP)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-danger fw-bold fs-5">(+0)</span>
+                                            }
+                                        </td>
+                        
                                     </tr>
                                 }
                             }
                             else
                             {
                                 <tr>
-                                    <td colspan="4" class="text-center py-5 text-white opacity-75 fw-bold">
+                                    <td colspan="5" class="text-center py-5 text-white opacity-75 fw-bold">
                                         <i class="bi bi-info-circle-fill text-danger me-2 fs-5"></i>
                                         Er zijn nog geen punten berekend voor deze poule.
                                     </td>
