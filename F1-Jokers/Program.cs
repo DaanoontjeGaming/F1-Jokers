@@ -27,6 +27,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddHostedService<F1Jokers.Services.VoorspellingKopieerService>();
 builder.Services.AddHttpClient<F1Jokers.Services.F1ApiService>();
+builder.Services.AddScoped<F1Jokers.Services.PuntenService>();
 
 var app = builder.Build();
 

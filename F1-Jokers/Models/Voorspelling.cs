@@ -16,5 +16,6 @@ namespace F1Jokers.Models
 
         [Required]
         public int StartNr { get; set; }
+        public int BehaaldePunten { get; set; }
     }
 }
