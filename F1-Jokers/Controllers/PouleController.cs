@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using F1Jokers.Models;
-using F1Jokers.Data; // Zorg dat dit klopt met jouw database namespace
+using F1Jokers.Data;
+using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace F1Jokers.Controllers
 {
+    [Authorize]
     public class PouleController : Controller
     {
         private readonly AppDbContext _context;
@@ -15,54 +18,70 @@ namespace F1Jokers.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string raceId)
         {
-            // 1. Haal de Deelnemers op, gesorteerd op punten (hoog naar laag)
+            // 1. Haal alle races op voor de dropdown (we filteren de 'Seizoen' records eruit)
+            var kalender = _context.Kalender
+                .Where(k => !k.RaceID.StartsWith("Seizoen"))
+                .OrderBy(k => k.Deadline) // Netjes op volgorde van de kalenderdatum
+                .ToList();
+
+            // 2. Fallback-logica: Als er geen raceId is meegegeven, pakken we de meest recent gereden race
+            if (string.IsNullOrEmpty(raceId) && kalender.Any())
+            {
+                var meestRecenteGeslotenRace = kalender
+                    .Where(k => DateTime.Now > k.Deadline)
+                    .OrderByDescending(k => k.Deadline)
+                    .FirstOrDefault();
+
+                // Als er nog geen enkele race gesloten is, pakken we gewoon de eerste race van het seizoen
+                raceId = meestRecenteGeslotenRace?.RaceID ?? kalender.First().RaceID;
+            }
+
+            // 3. Haal de Deelnemers op uit de database
+            // ARCHITECTUUR TIP VOOR JE SHOWCASE:
+            // Nu pakken we nog de algemene 'GebruikerPoints'. Zodra je een tabel hebt die de scores 
+            // PER RACE bijhoudt (bijv. UserScoresPerRace), kun je hier de query aanpassen naar:
+            // .Where(g => g.Rol == "Deelnemer").Select(g => nieuwe berekening tot en met raceId)
             var deelnemers = _context.Gebruikers
                 .Where(g => g.Rol == "Deelnemer")
                 .OrderByDescending(g => g.GebruikerPoints)
                 .ToList();
 
             var ranglijst = new List<GebruikerKlassementItem>();
+            int huidigeIndex = 1;
+            int weergavePositie = 1;
+            int? vorigePunten = null;
 
-            // Variabelen voor de "gedeelde plek" logica
-            int huidigeIndex = 1;      // Telt gewoon op: 1, 2, 3, 4, 5
-            int weergavePositie = 1;   // De rank die we op het scherm tonen
-            int? vorigePunten = null;  // Onthoudt de score van de vorige iteratie
-
-            // 2. Bouw het klassement op
             foreach (var speler in deelnemers)
             {
                 int punten = speler.GebruikerPoints ?? 0;
 
-                // Als dit NIET de eerste speler is, én hij heeft MINDER punten dan de vorige speler:
-                // Dan updaten we de weergave positie naar de huidige index.
-                // (Als de punten wél gelijk zijn, slaan we deze stap over en houden ze dezelfde weergavePositie!)
                 if (vorigePunten.HasValue && punten < vorigePunten.Value)
                 {
                     weergavePositie = huidigeIndex;
                 }
 
-                // Voeg de speler toe aan de lijst met de (eventueel gedeelde) weergave positie
                 ranglijst.Add(new GebruikerKlassementItem
                 {
                     Positie = weergavePositie,
                     Username = speler.Username,
                     TotalePunten = punten,
-                    VerschilVorigGPWeekend = 0
+                    VerschilVorigGPWeekend = 0,
+                    AantalChampagneFlessen = 2
                 });
 
-                // Sla de punten op voor de vergelijking in de volgende ronde
                 vorigePunten = punten;
-
-                // De interne teller gaat altijd +1, ongeacht een gelijkspel
                 huidigeIndex++;
             }
 
+            // 4. Bouw het complete model op inclusief geselecteerde data
             var model = new PouleViewModel
             {
                 AlgemenePouleNaam = "F1-Jokers Algemeen Klassement",
-                Ranglijst = ranglijst
+                Ranglijst = ranglijst,
+                SelectedRaceId = raceId,
+                VolledigeKalender = kalender
             };
 
             return View(model);
