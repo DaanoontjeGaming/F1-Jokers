@@ -11,22 +11,24 @@ namespace F1Jokers.Controllers
     [Authorize]
     public class PouleController : Controller
     {
+        // --- Fields ---
         private readonly AppDbContext _context;
 
+        // --- Constructor ---
         public PouleController(AppDbContext context)
         {
             _context = context;
         }
 
+        // --- Actions ---
         public IActionResult Index(string raceId)
         {
-            // 1. Haal alle races op voor de dropdown (we filteren de 'Seizoen' records eruit)
+            // --- AANGEPAST: Filter Seizoen-records én Sprintraces (eindigend op "S") eruit ---
             var kalender = _context.Kalender
-                .Where(k => !k.RaceID.StartsWith("Seizoen"))
-                .OrderBy(k => k.Deadline) // Netjes op volgorde van de kalenderdatum
+                .Where(k => !k.RaceID.StartsWith("Seizoen") && !k.RaceID.EndsWith("S"))
+                .OrderBy(k => k.Deadline)
                 .ToList();
 
-            // 2. Fallback-logica: Als er geen raceId is meegegeven, pakken we de meest recent gereden race
             if (string.IsNullOrEmpty(raceId) && kalender.Any())
             {
                 var meestRecenteGeslotenRace = kalender
@@ -34,19 +36,46 @@ namespace F1Jokers.Controllers
                     .OrderByDescending(k => k.Deadline)
                     .FirstOrDefault();
 
-                // Als er nog geen enkele race gesloten is, pakken we gewoon de eerste race van het seizoen
                 raceId = meestRecenteGeslotenRace?.RaceID ?? kalender.First().RaceID;
             }
 
-            // 3. Haal de Deelnemers op uit de database
-            // ARCHITECTUUR TIP VOOR JE SHOWCASE:
-            // Nu pakken we nog de algemene 'GebruikerPoints'. Zodra je een tabel hebt die de scores 
-            // PER RACE bijhoudt (bijv. UserScoresPerRace), kun je hier de query aanpassen naar:
-            // .Where(g => g.Rol == "Deelnemer").Select(g => nieuwe berekening tot en met raceId)
             var deelnemers = _context.Gebruikers
                 .Where(g => g.Rol == "Deelnemer")
                 .OrderByDescending(g => g.GebruikerPoints)
                 .ToList();
+
+            // De punten van de hoofdrace én de sprintrace worden hier al netjes bij elkaar opgeteld
+            var voorspellingenDezeRace = _context.Voorspellingen
+                .Where(v => v.RaceID == raceId || v.RaceID == raceId + "S")
+                .ToList();
+
+            var puntenDezeRace = voorspellingenDezeRace
+                .GroupBy(v => v.GebruikerID)
+                .ToDictionary(g => g.Key, g => g.Sum(v => v.BehaaldePunten));
+
+            var oudeStand = deelnemers
+                .Select(d => new {
+                    d.GebruikerID,
+                    OudePunten = (d.GebruikerPoints ?? 0) - (puntenDezeRace.ContainsKey(d.GebruikerID) ? puntenDezeRace[d.GebruikerID] : 0)
+                })
+                .OrderByDescending(x => x.OudePunten)
+                .ToList();
+
+            var vorigePosities = new Dictionary<int, int>();
+            int oudePositie = 1;
+            int? vorigeOudePunten = null;
+            int oudeIndex = 1;
+
+            foreach (var item in oudeStand)
+            {
+                if (vorigeOudePunten.HasValue && item.OudePunten < vorigeOudePunten.Value)
+                {
+                    oudePositie = oudeIndex;
+                }
+                vorigePosities[item.GebruikerID] = oudePositie;
+                vorigeOudePunten = item.OudePunten;
+                oudeIndex++;
+            }
 
             var ranglijst = new List<GebruikerKlassementItem>();
             int huidigeIndex = 1;
@@ -56,29 +85,32 @@ namespace F1Jokers.Controllers
             foreach (var speler in deelnemers)
             {
                 int punten = speler.GebruikerPoints ?? 0;
+                int racePunten = puntenDezeRace.ContainsKey(speler.GebruikerID) ? puntenDezeRace[speler.GebruikerID] : 0;
 
                 if (vorigePunten.HasValue && punten < vorigePunten.Value)
                 {
                     weergavePositie = huidigeIndex;
                 }
 
+                int positieVerschil = vorigePosities[speler.GebruikerID] - weergavePositie;
+
                 ranglijst.Add(new GebruikerKlassementItem
                 {
                     Positie = weergavePositie,
                     Username = speler.Username,
                     TotalePunten = punten,
-                    VerschilVorigGPWeekend = 0,
-                    AantalChampagneFlessen = 2
+                    VerschilVorigGPWeekend = positieVerschil,
+                    PuntenGeselecteerdeGP = racePunten,
+                    AantalChampagneFlessen = speler.Champagne
                 });
 
                 vorigePunten = punten;
                 huidigeIndex++;
             }
 
-            // 4. Bouw het complete model op inclusief geselecteerde data
             var model = new PouleViewModel
             {
-                AlgemenePouleNaam = "F1-Jokers Algemeen Klassement",
+                AlgemenePouleNaam = "F1-Jokers Poule Tussenstand",
                 Ranglijst = ranglijst,
                 SelectedRaceId = raceId,
                 VolledigeKalender = kalender

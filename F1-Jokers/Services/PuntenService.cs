@@ -2,21 +2,25 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace F1Jokers.Services
 {
     public class PuntenService
     {
+        // --- Fields ---
         private readonly AppDbContext _context;
 
+        // --- Constructor ---
         public PuntenService(AppDbContext context)
         {
             _context = context;
         }
 
+        // --- Methods ---
         public async Task BerekenPuntenVoorRaceAsync(string raceId)
         {
-            // 1. Haal de uitslagen, voorspellingen en rekenregels op
+            // --- Inladen Data ---
             var uitslagen = await _context.Uitslagen.Where(u => u.RaceID == raceId).ToListAsync();
             var voorspellingen = await _context.Voorspellingen.Where(v => v.RaceID == raceId).ToListAsync();
             var regels = await _context.PuntenParameters.ToDictionaryAsync(p => p.Parameter, p => p.Waarde);
@@ -26,7 +30,7 @@ namespace F1Jokers.Services
             var top10StartNrs = uitslagen.Where(u => u.TypeResultaat.StartsWith("RacePos")).Select(u => u.StartNr).ToList();
             var top5SprintStartNrs = uitslagen.Where(u => u.TypeResultaat.StartsWith("SprintPos")).Select(u => u.StartNr).ToList();
 
-            // 2. Bereken de punten per individuele voorspelling
+            // --- Berekening Per Voorspelling ---
             foreach (var voorspelling in voorspellingen)
             {
                 voorspelling.BehaaldePunten = 0;
@@ -34,7 +38,6 @@ namespace F1Jokers.Services
                 bool isRacePos = voorspelling.TypeVoorspelling.StartsWith("RacePos");
                 bool isSprintPos = voorspelling.TypeVoorspelling.StartsWith("SprintPos");
 
-                // Basis punten (+3)
                 if (isRacePos && top10StartNrs.Contains(voorspelling.StartNr))
                 {
                     voorspelling.BehaaldePunten += regels["RacePosBijTop10"];
@@ -44,7 +47,6 @@ namespace F1Jokers.Services
                     voorspelling.BehaaldePunten += regels["SprintPosBijTop5"];
                 }
 
-                // Exacte bonus punten
                 var exacteUitslag = uitslagen.FirstOrDefault(u => u.TypeResultaat == voorspelling.TypeVoorspelling);
 
                 if (exacteUitslag != null && exacteUitslag.StartNr == voorspelling.StartNr)
@@ -65,34 +67,72 @@ namespace F1Jokers.Services
                         case "SprintPos5": voorspelling.BehaaldePunten += regels["SprintPos5Juist"]; break;
 
                         default:
-                            if (isRacePos)
-                            {
-                                voorspelling.BehaaldePunten += regels["RacePos4-10Juist"];
-                            }
+                            if (isRacePos) voorspelling.BehaaldePunten += regels["RacePos4-10Juist"];
                             break;
                     }
                 }
             }
 
-            // Sla de individuele scores eerst op
             await _context.SaveChangesAsync();
 
-            // 3. TOTAALSCORE BEREKENING: Update het algemeen klassement
             var gebruikers = await _context.Gebruikers.ToListAsync();
             var alleVoorspellingen = await _context.Voorspellingen.ToListAsync();
+            var alleUitslagen = await _context.Uitslagen.ToListAsync();
 
+            // --- Berekening Totale Punten ---
             foreach (var gebruiker in gebruikers)
             {
-                // Tel alle behaalde punten van deze specifieke gebruiker op
                 int totaalScore = alleVoorspellingen
                     .Where(v => v.GebruikerID == gebruiker.GebruikerID)
                     .Sum(v => v.BehaaldePunten);
 
-                // AANGEPAST: Gebruikt nu jouw eigen property GebruikerPoints
                 gebruiker.GebruikerPoints = totaalScore;
             }
 
-            // Sla de nieuwe totale standen op in de database
+            // --- Berekening Champagne Flessen (Eerlijk verdeeld bij gelijkspel) ---
+            foreach (var g in gebruikers)
+            {
+                g.Champagne = 0;
+            }
+
+            var verredenWeekenden = alleUitslagen
+                .Select(u => u.RaceID.EndsWith("S") ? u.RaceID.Substring(0, u.RaceID.Length - 1) : u.RaceID)
+                .Distinct()
+                .ToList();
+
+            foreach (var weekendId in verredenWeekenden)
+            {
+                var voorspellingenVanWeekend = alleVoorspellingen.Where(v => v.RaceID == weekendId || v.RaceID == weekendId + "S").ToList();
+
+                var prestatiesPerGebruiker = voorspellingenVanWeekend
+                    .GroupBy(v => v.GebruikerID)
+                    .Select(group => new
+                    {
+                        GebruikerID = group.Key,
+                        PuntenDitWeekend = group.Sum(v => v.BehaaldePunten)
+                    })
+                    .ToList();
+
+                if (!prestatiesPerGebruiker.Any()) continue;
+
+                int maxPunten = prestatiesPerGebruiker.Max(j => j.PuntenDitWeekend);
+
+                if (maxPunten > 0)
+                {
+                    // Pak IEDEREEN die de maximale score heeft behaald en geef ze een fles
+                    var topScorers = prestatiesPerGebruiker.Where(j => j.PuntenDitWeekend == maxPunten).ToList();
+
+                    foreach (var winnaar in topScorers)
+                    {
+                        var u = gebruikers.FirstOrDefault(usr => usr.GebruikerID == winnaar.GebruikerID);
+                        if (u != null)
+                        {
+                            u.Champagne++;
+                        }
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
         }
     }
