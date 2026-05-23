@@ -5,6 +5,8 @@ namespace F1Jokers.Models
 {
     public class VoorspellingViewModel
     {
+        public string RaceID { get; set; }
+        public List<Coureur> BeschikbareCoureurs { get; set; }
         public List<Coureur> Coureurs { get; set; }
         public List<Kalender> VolledigeKalender { get; set; }
         public Kalender HuidigeKalenderItem { get; set; }

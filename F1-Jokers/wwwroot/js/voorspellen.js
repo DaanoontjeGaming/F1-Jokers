@@ -1,4 +1,5 @@
-﻿function allowDrop(ev) { ev.preventDefault(); }
+﻿// --- 1. Drag & Drop Logica ---
+function allowDrop(ev) { ev.preventDefault(); }
 
 function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
 
@@ -55,6 +56,7 @@ function drop(ev) {
     }
 }
 
+// --- 2. Tabblad Navigatie (Rode Knoppen) ---
 function switchView(tabId) {
     document.querySelectorAll(".race-section").forEach(s => s.classList.add("hide-section"));
     const activeSection = document.getElementById(tabId);
@@ -80,6 +82,7 @@ function switchView(tabId) {
     if (activeBtn) activeBtn.classList.add("active");
 }
 
+// --- 3. Toegankelijkheidsmodus (Blauwe Knop) ---
 function toggleAccessibilityMode() {
     const container = document.getElementById('voorspel-container');
     if (!container) return;
@@ -100,6 +103,7 @@ function toggleAccessibilityMode() {
     }
 }
 
+// --- 4. Data Verzamelen voor Opslag ---
 function getValuesFromSlots(desktopPrefix, count, mobilePrefix) {
     let result = [];
 
@@ -177,6 +181,7 @@ function getValuesFromSlots(desktopPrefix, count, mobilePrefix) {
     return result.join(",");
 }
 
+// --- 5. Voorspelling Versturen naar Server ---
 async function verstuurVoorspelling() {
     const raceSelector = document.querySelector('select[name="raceId"]');
     if (!raceSelector) {
@@ -219,3 +224,45 @@ async function verstuurVoorspelling() {
         alert("Er ging iets mis met de verbinding naar de server.");
     }
 }
+
+// --- 6. Voorkom Dubbele Coureurs in Dropdowns ---
+document.addEventListener('DOMContentLoaded', function () {
+    function blockDuplicateSelections(dropdownClass) {
+        const selects = document.querySelectorAll(`select.${dropdownClass}`);
+        if (!selects || selects.length === 0) return;
+
+        function updateDropdowns() {
+            const geselecteerdeWaardes = Array.from(selects)
+                .map(s => s.value)
+                .filter(val => val && val.trim() !== "");
+
+            selects.forEach(select => {
+                const huidigeWaarde = select.value;
+                const opties = select.querySelectorAll('option');
+
+                opties.forEach(optie => {
+                    if (optie.value === "") return;
+
+                    if (geselecteerdeWaardes.includes(optie.value) && optie.value !== huidigeWaarde) {
+                        optie.disabled = true;
+                        optie.style.display = 'none';
+                    } else {
+                        optie.disabled = false;
+                        optie.style.display = '';
+                    }
+                });
+            });
+        }
+
+        selects.forEach(select => {
+            select.addEventListener('change', updateDropdowns);
+        });
+
+        updateDropdowns();
+    }
+
+    blockDuplicateSelections('mobile-select-main');
+    blockDuplicateSelections('mobile-select-sprint');
+    blockDuplicateSelections('mobile-select-sdrivers');
+    blockDuplicateSelections('mobile-select-steams');
+});
