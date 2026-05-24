@@ -1,37 +1,55 @@
-using F1Jokers.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using F1Jokers.Data;
+using F1Jokers.Services;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Controllers en Views toevoegen aan de container
 builder.Services.AddControllersWithViews();
 
-// Database Context toevoegen
+// Database verbinding (MySQL) configureren via de AppDbContext
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Server=localhost;Database=F1-Jokers;User=root;Password=;";
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// Jouw uitgebreide Authenticatie configuratie (Behouden)
+// HttpClient registreren ten behoeve van de externe F1 API
+builder.Services.AddHttpClient<F1ApiService>();
+
+// Applicatieservices registreren voor dependency injection
+builder.Services.AddScoped<PuntenService>();
+
+// Achtergrondservice (robot) voor automatische deadline-verwerking inschakelen
+builder.Services.AddHostedService<VoorspellingKopieerService>();
+
+// Authenticatie-cookie configureren met expliciete claim-overrides tegen exceptions
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.Cookie.Name = "F1Jokers.AuthCookie";
         options.LoginPath = "/Account/Inloggen";
-        options.AccessDeniedPath = "/Home/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromDays(3);
-        options.SlidingExpiration = true;
-        options.Cookie.HttpOnly = true;
-        options.Cookie.IsEssential = true;
-    });
+        options.AccessDeniedPath = "/Home/Index";
+        options.Cookie.Name = "F1JokersAuthCookie";
 
-builder.Services.AddHostedService<F1Jokers.Services.VoorspellingKopieerService>();
-builder.Services.AddHttpClient<F1Jokers.Services.F1ApiService>();
-builder.Services.AddScoped<F1Jokers.Services.PuntenService>();
+        options.Events.OnValidatePrincipal = async context =>
+        {
+            var principal = context.Principal;
+            if (principal?.Identity is ClaimsIdentity identity)
+            {
+                var roleClaim = principal.FindFirst(ClaimTypes.Role);
+                if (roleClaim != null && !identity.HasClaim(c => c.Type == identity.RoleClaimType))
+                {
+                    identity.AddClaim(new Claim(identity.RoleClaimType, roleClaim.Value));
+                }
+            }
+            await Task.CompletedTask;
+        };
+    });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// HTTP request pipeline configureren
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -43,10 +61,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Authenticatie moet ALTIJD vóór Autorisatie staan
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Route configuratie: controller is nu ingesteld op Home
+// Standaard MVC-route middleware mapping
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

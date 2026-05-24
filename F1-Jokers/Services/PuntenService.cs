@@ -38,11 +38,12 @@ namespace F1Jokers.Services
                 bool isRacePos = voorspelling.TypeVoorspelling.StartsWith("RacePos");
                 bool isSprintPos = voorspelling.TypeVoorspelling.StartsWith("SprintPos");
 
-                if (isRacePos && top10StartNrs.Contains(voorspelling.StartNr))
+                // OPLOSSING: Check eerst .HasValue en gebruik daarna .Value voor de .Contains check
+                if (isRacePos && voorspelling.StartNr.HasValue && top10StartNrs.Contains(voorspelling.StartNr.Value))
                 {
                     voorspelling.BehaaldePunten += regels["RacePosBijTop10"];
                 }
-                else if (isSprintPos && top5SprintStartNrs.Contains(voorspelling.StartNr))
+                else if (isSprintPos && voorspelling.StartNr.HasValue && top5SprintStartNrs.Contains(voorspelling.StartNr.Value))
                 {
                     voorspelling.BehaaldePunten += regels["SprintPosBijTop5"];
                 }
@@ -89,7 +90,7 @@ namespace F1Jokers.Services
                 gebruiker.GebruikerPoints = totaalScore;
             }
 
-            // --- Berekening Champagne Flessen (Eerlijk verdeeld bij gelijkspel) ---
+            // --- Berekening Champagne Flessen ---
             foreach (var g in gebruikers)
             {
                 g.Champagne = 0;
@@ -119,7 +120,6 @@ namespace F1Jokers.Services
 
                 if (maxPunten > 0)
                 {
-                    // Pak IEDEREEN die de maximale score heeft behaald en geef ze een fles
                     var topScorers = prestatiesPerGebruiker.Where(j => j.PuntenDitWeekend == maxPunten).ToList();
 
                     foreach (var winnaar in topScorers)

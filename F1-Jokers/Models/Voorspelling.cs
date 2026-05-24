@@ -14,8 +14,10 @@ namespace F1Jokers.Models
 
         public string TypeVoorspelling { get; set; }
 
-        [Required]
-        public int StartNr { get; set; }
+        public int? StartNr { get; set; }
+
+        public int? TeamId { get; set; }
+
         public int BehaaldePunten { get; set; }
     }
 }

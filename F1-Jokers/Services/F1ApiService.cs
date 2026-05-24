@@ -22,8 +22,18 @@ namespace F1Jokers.Services
         }
 
         // --- Methods ---
-        public async Task<string> HaalEnVerwerkRaceAsync(string apiRound)
+        public async Task<string> HaalEnVerwerkRaceAsync(string raceId)
         {
+            // --- LOGICA: Vertaal lokaal RaceID naar API Ronde ---
+            string apiRound = raceId;
+
+            // Controleer of het huidige jaar 2026 is, of het ID een getal is, en of het 6 of hoger is
+            if (DateTime.Now.Year == 2026 && int.TryParse(raceId, out int lokaalId) && lokaalId >= 6)
+            {
+                apiRound = (lokaalId - 2).ToString();
+            }
+
+            // --- 1. Haal Race Uitslagen op (met apiRound) ---
             var resultsResponse = await _httpClient.GetStringAsync($"https://api.jolpi.ca/ergast/f1/current/{apiRound}/results.json");
             using var resultsDoc = JsonDocument.Parse(resultsResponse);
 
@@ -34,7 +44,7 @@ namespace F1Jokers.Services
 
             if (racesElement.GetArrayLength() == 0)
             {
-                throw new Exception($"Geen uitslagen gevonden voor ronde {apiRound}. Is deze race al verreden?");
+                throw new Exception($"Geen uitslagen gevonden voor API ronde {apiRound} (Lokaal ID: {raceId}). Is deze race al verreden?");
             }
 
             var raceNode = racesElement[0];
@@ -73,6 +83,7 @@ namespace F1Jokers.Services
                 }
             }
 
+            // --- 2. Haal Kwalificatie Uitslagen op (met apiRound) ---
             var qualiResponse = await _httpClient.GetStringAsync($"https://api.jolpi.ca/ergast/f1/current/{apiRound}/qualifying.json");
             using var qualiDoc = JsonDocument.Parse(qualiResponse);
             var qualiArray = qualiDoc.RootElement.GetProperty("MRData").GetProperty("RaceTable").GetProperty("Races")[0].GetProperty("QualifyingResults");
@@ -80,6 +91,7 @@ namespace F1Jokers.Services
             int poleStartNr = int.Parse(qualiArray[0].GetProperty("number").GetString());
             _context.Uitslagen.Add(new Uitslag { RaceID = correcteRaceId, TypeResultaat = "RacePole", StartNr = poleStartNr });
 
+            // --- 3. Haal Sprint Uitslagen op (indien van toepassing) ---
             if (kalenderRace.HasSprintRace)
             {
                 string sprintRaceId = correcteRaceId + "S";

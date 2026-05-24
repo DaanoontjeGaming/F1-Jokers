@@ -16,10 +16,10 @@
 
     // --- DEADLINE CONTROLE ---
     bool isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Beheerder");
-    
+
     // Check de deadline voor de huidige geselecteerde race
     bool raceLocked = Model.HuidigeKalenderItem != null && DateTime.Now > Model.HuidigeKalenderItem.Deadline && !isAdmin;
-    
+
     // Check de deadline voor het seizoen
     var seizoenItem = DbContext.Kalender.FirstOrDefault(k => k.RaceID.StartsWith("Seizoen"));
     bool seasonLocked = seizoenItem != null && DateTime.Now > seizoenItem.Deadline && !isAdmin;
@@ -32,6 +32,7 @@
             <i class="bi bi-lock-fill text-danger display-1 mb-4"></i>
             <h1 class="text-white h2 fw-bold">TOEGANG GEWEIGERD</h1>
             <p class="text-light opacity-75 mb-4">Je moet ingelogd zijn om deel te nemen aan de F1-Jokers poule en voorspellingen te doen.</p>
+
             <a asp-controller="Account" asp-action="Inloggen" class="btn btn-danger btn-lg px-5 fw-bold shadow">
                 <i class="bi bi-box-arrow-in-right me-2"></i> INLOGGEN
             </a>
@@ -43,6 +44,7 @@ else
     <section class="race-info text-center mb-4">
         <div class="mb-4">
             <form method="get" action="/Voorspelling/Index">
+
                 <label for="raceIdSelector" class="visually-hidden">Kies een Grand Prix</label>
                 <select id="raceIdSelector" name="raceId" class="form-select bg-dark text-white border-secondary w-auto d-inline-block" onchange="this.form.submit()">
                     @if (Model.VolledigeKalender != null)
@@ -55,7 +57,7 @@ else
                 </select>
             </form>
         </div>
-        
+
         <div class="race-tabs btn-group mb-3">
             <button type="button" class="btn-tab active" onclick="switchView('main-race')">Hoofdrace</button>
             @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
@@ -83,10 +85,10 @@ else
     </section>
 
     <div id="voorspel-container" class="prediction-container d-flex justify-content-center gap-4 responsive-layout">
-        
+
         <section class="column desktop-only" id="selection-pool" style="width: 420px; max-width: 100%;">
             <h2 class="column-title border-bottom border-danger pb-2 mb-3">Keuzelijst</h2>
-            
+
             <div class="scrollable-pool">
                 <ul class="driver-list mb-4 race-pool list-unstyled" id="pool-main" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 100px;">
                     @if (gesorteerdeCoureurs != null)
@@ -156,7 +158,7 @@ else
                             <li class="team-card border border-secondary p-2 mb-2 d-flex align-items-center"
                                 draggable="@(seasonLocked ? "false" : "true")"
                                 ondragstart="@(seasonLocked ? "" : "drag(event)")"
-                                id="team-c-@teamRep.Startnr" data-id="@teamRep.Startnr">
+                                id="team-c-@teamRep.Team.TeamId" data-id="@teamRep.Team.TeamId">
                                 <div style="width: 230px;">
                                     <span class="dr-name fw-bold">@teamRep.Team.Teamnaam</span>
                                 </div>
@@ -176,7 +178,7 @@ else
                     <div class="slot d-flex mb-2 align-items-center">
                         <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
                         <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="race-pos@(i)" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
-                        
+
                         <label for="mobile-race-pos@(i)" class="visually-hidden">Positie @i</label>
                         <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-main" id="mobile-race-pos@(i)" @(raceLocked ? "disabled" : "")>
                             <option value="">Kies coureur...</option>
@@ -304,7 +306,7 @@ else
                             {
                                 foreach (var teamRep in gesorteerdeTeams)
                                 {
-                                    <option value="@teamRep.Startnr">@teamRep.Team.Teamnaam &nbsp;&nbsp;|&nbsp;&nbsp; @teamRep.Team.Powerunit</option>
+                                    <option value="@teamRep.Team.TeamId">@teamRep.Team.Teamnaam &nbsp;&nbsp;|&nbsp;&nbsp; @teamRep.Team.Powerunit</option>
                                 }
                             }
                         </select>
@@ -390,82 +392,90 @@ else
 
         const origineleSwitchView = window.switchView;
         window.switchView = function (tabId) {
-            if (typeof origineleSwitchView === "function") {
-                origineleSwitchView(tabId);
-            }
+        if (typeof origineleSwitchView === "function") {
+        origineleSwitchView(tabId);
+        }
 
-            let isLocked = false;
-            if (tabId === 'season-drivers' || tabId === 'season-teams') {
-                isLocked = window.isSeasonLocked;
-            } else {
-                isLocked = window.isRaceLocked;
-            }
+        let isLocked = false;
+        if (tabId === 'season-drivers' || tabId === 'season-teams') {
+        isLocked = window.isSeasonLocked;
+        } else {
+        isLocked = window.isRaceLocked;
+        }
 
-            const btnOpslaan = document.getElementById('btn-opslaan');
-            const alertGesloten = document.getElementById('alert-gesloten');
-            const selectionPool = document.getElementById('selection-pool');
+        const btnOpslaan = document.getElementById('btn-opslaan');
+        const alertGesloten = document.getElementById('alert-gesloten');
+        const selectionPool = document.getElementById('selection-pool');
 
-            if (btnOpslaan && alertGesloten) {
-                if (isLocked) {
+        if (btnOpslaan && alertGesloten) {
+        if (isLocked) {
 
-                    btnOpslaan.style.display = 'none';
-                    alertGesloten.style.display = 'block';
-                    if (selectionPool) selectionPool.style.display = 'none';
-                } else {
+        btnOpslaan.style.display = 'none';
+        alertGesloten.style.display = 'block';
+        if (selectionPool) selectionPool.style.display = 'none';
+        } else {
 
-                    btnOpslaan.style.display = 'inline-block';
-                    alertGesloten.style.display = 'none';
-                    if (selectionPool) selectionPool.style.display = '';
-                }
-            }
+        btnOpslaan.style.display = 'inline-block';
+        alertGesloten.style.display = 'none';
+        if (selectionPool) selectionPool.style.display = '';
+        }
+        }
         };
-
- 
         document.addEventListener("DOMContentLoaded", function () {
-            window.switchView('main-race');
+        window.switchView('main-race');
 
-            const dbData = @Html.Raw(Json.Serialize(Model.BestaandeVoorspellingen));
-            
-            if (!dbData || dbData.length === 0) return;
+        const dbData = @Html.Raw(Json.Serialize(Model.BestaandeVoorspellingen));
 
-            dbData.forEach(v => {
-                let typeV = (v.typeVoorspelling || v.TypeVoorspelling || "").trim();
-                let dataId = String(v.startNr ?? v.StartNr ?? v.startnr ?? "").trim();
-                
-                if (!typeV || dataId === "") return;
+        if (!dbData || dbData.length === 0) return;
 
-                const bonusMap = {
-                    "RacePole": "bonus-pole", "SnelsteRonde": "bonus-fastest", "SprintPole": "bonus-sprint-pole",
-                    "MeesteRaceWinst": "season-most-wins", "MeesteSprintWinst": "season-most-sprint-wins",
-                    "MeesteRacePoles": "season-most-poles", "MeesteSprintPoles": "season-most-sprint-poles"
-                };
-                if (bonusMap[typeV]) { const el = document.getElementById(bonusMap[typeV]); if (el) el.value = dataId; return; }
+        dbData.forEach(v => {
+        let typeV = (v.typeVoorspelling || v.TypeVoorspelling || "").trim();
 
-                let zoneId = "", poolId = "", mobId = "";
-                if (typeV.includes("RacePos")) { let n = typeV.replace("RacePos", ""); zoneId = "race-pos" + n; poolId = "pool-main"; mobId = "mobile-race-pos" + n; }
-                else if (typeV.includes("SprintPos")) { let n = typeV.replace("SprintPos", ""); zoneId = "sprint-pos" + n; poolId = "pool-sprint"; mobId = "mobile-sprint-pos" + n; }
-                else if (typeV.includes("SeizoenCPos")) { let n = typeV.replace("SeizoenCPos", ""); zoneId = "sdriver-pos" + n; poolId = "pool-season-drivers"; mobId = "mobile-sdriver-pos" + n; }
-                else if (typeV.includes("SeizoenTPos")) { let n = typeV.replace("SeizoenTPos", ""); zoneId = "steam-pos" + n; poolId = "pool-season-teams"; mobId = "mobile-steam-pos" + n; }
+        // AANGEPAST: Hij zoekt nu naast het Startnr ook actief naar TeamId (voor het inladen van de teams)
+        let dataId = String(v.startNr ?? v.StartNr ?? v.startnr ?? v.teamId ?? v.TeamId ?? "").trim();
 
-                if (zoneId && poolId) {
-                    const dropZone = document.getElementById(zoneId);
-                    const card = document.querySelector("#" + poolId + " li[data-id='" + dataId + "']");
-                    
-                    if (dropZone && card) {
-                        const clone = card.cloneNode(true);
-                        clone.id = "clone-" + card.id + "-target-" + dropZone.id;
-                        clone.setAttribute("ondragstart", "drag(event)");
-                        clone.setAttribute("data-id", dataId);
-                        
-                        clone.classList.remove("hide-section");
-                        
-                        dropZone.innerHTML = "";
-                        dropZone.appendChild(clone);
-                        card.classList.add("hide-section");
-                    }
-                }
-                if (mobId) { const el = document.getElementById(mobId); if (el) el.value = dataId; }
-            });
+        if (!typeV || dataId === "") return;
+
+        const bonusMap = {
+        "RacePole": "bonus-pole", "SnelsteRonde": "bonus-fastest", "SprintPole": "bonus-sprint-pole",
+        "MeesteRaceWinst": "season-most-wins", "MeesteSprintWinst": "season-most-sprint-wins",
+        "MeesteRacePoles": "season-most-poles", "MeesteSprintPoles": "season-most-sprint-poles"
+        };
+        if (bonusMap[typeV]) { const el = document.getElementById(bonusMap[typeV]);
+        if (el) el.value = dataId; return; }
+
+        let zoneId = "", poolId = "", mobId = "";
+        if (typeV.includes("RacePos")) { let n = typeV.replace("RacePos", ""); zoneId = "race-pos" + n; poolId = "pool-main";
+        mobId = "mobile-race-pos" + n; }
+        else if (typeV.includes("SprintPos")) { let n = typeV.replace("SprintPos", "");
+        zoneId = "sprint-pos" + n; poolId = "pool-sprint"; mobId = "mobile-sprint-pos" + n;
+        }
+        else if (typeV.includes("SeizoenCPos")) { let n = typeV.replace("SeizoenCPos", "");
+        zoneId = "sdriver-pos" + n; poolId = "pool-season-drivers"; mobId = "mobile-sdriver-pos" + n;
+        }
+        else if (typeV.includes("SeizoenTPos")) { let n = typeV.replace("SeizoenTPos", "");
+        zoneId = "steam-pos" + n; poolId = "pool-season-teams"; mobId = "mobile-steam-pos" + n;
+        }
+
+        if (zoneId && poolId) {
+        const dropZone = document.getElementById(zoneId);
+        const card = document.querySelector("#" + poolId + " li[data-id='" + dataId + "']");
+        if (dropZone && card) {
+        const clone = card.cloneNode(true);
+        clone.id = "clone-" + card.id + "-target-" + dropZone.id;
+        clone.setAttribute("ondragstart", "drag(event)");
+        clone.setAttribute("data-id", dataId);
+
+        clone.classList.remove("hide-section");
+
+        dropZone.innerHTML = "";
+        dropZone.appendChild(clone);
+        card.classList.add("hide-section");
+        }
+        }
+        if (mobId) { const el = document.getElementById(mobId);
+        if (el) el.value = dataId; }
+        });
         });
     </script>
 }

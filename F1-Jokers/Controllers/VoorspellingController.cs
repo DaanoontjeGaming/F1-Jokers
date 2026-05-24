@@ -22,7 +22,6 @@ namespace F1Jokers.Controllers
         [HttpGet]
         public IActionResult Index(string raceId)
         {
-            // OPLOSSING: We gebruiken overal expliciete types in plaats van 'var'
             VoorspellingViewModel model = new VoorspellingViewModel();
             model.Coureurs = _context.Coureurs.Include(c => c.Team).ToList();
 
@@ -80,7 +79,6 @@ namespace F1Jokers.Controllers
             string sprintId = mainId + "S";
             string seizoenId = "Seizoen" + DateTime.Now.Year.ToString();
 
-            // OPLOSSING: Kalender is nu expliciet getypeerd. Geen dynamic verwarring meer mogelijk!
             Kalender? huidigeRace = _context.Kalender.FirstOrDefault(k => k.RaceID == mainId);
             Kalender? huidigeSeizoen = _context.Kalender.FirstOrDefault(k => k.RaceID == seizoenId);
             bool isAdmin = User.IsInRole("Beheerder");
@@ -90,7 +88,6 @@ namespace F1Jokers.Controllers
                 return BadRequest(new { message = "De deadline voor deze race is verstreken. Je kunt niets meer opslaan." });
             }
 
-            // OPLOSSING: IQueryable en List expliciet getypeerd om de lambda error te voorkomen
             IQueryable<Voorspelling> oudeDataQuery = _context.Voorspellingen.Where(v => v.GebruikerID == gebruikerId &&
                 (v.RaceID == mainId || v.RaceID == sprintId || v.RaceID == seizoenId));
 
@@ -105,16 +102,20 @@ namespace F1Jokers.Controllers
 
             List<Voorspelling> nieuweLijst = new List<Voorspelling>();
 
+            // --- VERNIEUWDE VOEGTOE METHODE ---
             void VoegToe(string rId, string type, int? nr)
             {
                 if (nr.HasValue && nr.Value > 0)
                 {
+                    bool isTeamVoorspelling = type.Contains("TPos");
+
                     nieuweLijst.Add(new Voorspelling
                     {
                         GebruikerID = gebruikerId,
                         RaceID = rId,
                         TypeVoorspelling = type,
-                        StartNr = nr.Value
+                        StartNr = isTeamVoorspelling ? null : nr.Value,
+                        TeamId = isTeamVoorspelling ? nr.Value : null
                     });
                 }
             }
