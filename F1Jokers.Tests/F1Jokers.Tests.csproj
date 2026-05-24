@@ -29,7 +29,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\F1Jokers\F1Jokers.csproj" />
+	  <ProjectReference Include="..\F1-Jokers\F1Jokers.csproj" />
 	</ItemGroup>
 
 </Project>
