@@ -26,4 +26,4 @@ jobs:
       run: dotnet build --no-restore --configuration Release
 
     - name: Run tests
-      run: dotnet test F1Jokers.Tests/F1Jokers.Tests.csproj --no-build --verbosity normal
+      run: dotnet test F1Jokers.Tests/F1Jokers.Tests.csproj --verbosity normal
