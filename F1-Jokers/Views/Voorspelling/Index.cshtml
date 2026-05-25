@@ -58,14 +58,14 @@ else
             </form>
         </div>
 
-        <div class="race-tabs btn-group mb-3">
-            <button type="button" class="btn-tab active" onclick="switchView('main-race')">Hoofdrace</button>
+        <div class="race-tabs d-flex flex-wrap justify-content-center gap-2 mb-3">
+            <button type="button" class="btn-tab active rounded" onclick="switchView('main-race')">Hoofdrace</button>
             @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
             {
-                <button type="button" class="btn-tab" onclick="switchView('sprint-race')">Sprintrace</button>
+                <button type="button" class="btn-tab rounded" onclick="switchView('sprint-race')">Sprintrace</button>
             }
-            <button type="button" class="btn-tab btn-season" onclick="switchView('season-drivers')">Seizoen Coureurs</button>
-            <button type="button" class="btn-tab btn-season" onclick="switchView('season-teams')">Seizoen Teams</button>
+            <button type="button" class="btn-tab btn-season rounded" onclick="switchView('season-drivers')">Seizoen Coureurs</button>
+            <button type="button" class="btn-tab btn-season rounded" onclick="switchView('season-teams')">Seizoen Teams</button>
         </div>
 
         <div class="mb-4 d-none d-lg-block">
