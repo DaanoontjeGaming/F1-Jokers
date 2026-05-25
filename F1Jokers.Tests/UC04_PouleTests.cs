@@ -26,7 +26,6 @@ namespace F1Jokers.Tests
             var context = GetInMemoryDbContext();
             context.Kalender.Add(new Kalender { RaceID = "1", Racenaam = "AusGP", Datum = DateTime.Now.AddDays(-2), Deadline = DateTime.Now.AddDays(-3), Racetype = "Race" });
 
-            // OPLOSSING: Email en Password toegevoegd omdat de database anders crasht op ontbrekende verplichte velden
             context.Gebruikers.Add(new Gebruiker
             {
                 GebruikerID = 1,
@@ -54,7 +53,7 @@ namespace F1Jokers.Tests
 
             Assert.NotNull(model);
 
-            // Als het goed is staat degene met 96 punten nu bovenaan (First)
+
             Assert.Equal("GoedeVoorspeller", model.Ranglijst.First().Username);
             Assert.Equal("SlechteVoorspeller", model.Ranglijst.Last().Username);
         }

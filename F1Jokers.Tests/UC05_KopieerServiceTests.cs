@@ -58,20 +58,18 @@ namespace F1Jokers.Tests
 
             var cancellationToken = new CancellationTokenSource();
 
-            // OPLOSSING: Start de service zonder hem direct te annuleren
             await service.StartAsync(cancellationToken.Token);
 
-            // Geef het achtergrondproces 500 milliseconden de tijd om de database-actie uit te voeren
+
             await Task.Delay(500);
 
-            // Stop de service daarna netjes
+
             await service.StopAsync(cancellationToken.Token);
 
             using (var context = new AppDbContext(options))
             {
                 var gekopieerdeVoorspelling = context.Voorspellingen.FirstOrDefault(v => v.RaceID == "2" && v.GebruikerID == 10);
 
-                // Nu zal dit niet meer falen op 'null' omdat de service tijd had om de data erin te zetten
                 Assert.NotNull(gekopieerdeVoorspelling);
                 Assert.Equal(3, gekopieerdeVoorspelling.StartNr);
             }

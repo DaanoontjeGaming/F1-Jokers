@@ -204,6 +204,52 @@ async function verstuurVoorspelling() {
         MeesteSprintPolesStartnr: document.getElementById("season-most-sprint-poles")?.value || null
     };
 
+    // --- START VALIDATIE LOGICA ---
+    let isIncompleet = false;
+    let foutMelding = "Niet alle voorspellingen zijn ingevuld. Vul de volgende onderdelen nog volledig in:\n\n";
+
+    // Valideer de race-specifieke voorspellingen (als de race nog open is)
+    if (!window.isRaceLocked) {
+        if (data.RaceTop10.split(',').includes("")) {
+            isIncompleet = true;
+            foutMelding += "➡️ Top 10 (Hoofdrace)\n";
+        }
+        if (!data.PolePositionStartnr) { isIncompleet = true; foutMelding += "➡️ Pole Position (Hoofdrace)\n"; }
+        if (!data.SnelsteRondeStartnr) { isIncompleet = true; foutMelding += "➡️ Snelste Ronde (Hoofdrace)\n"; }
+
+        // Controleer of de sprintrace tab bestaat in de HTML voor dit weekend
+        if (document.getElementById('sprint-race')) {
+            if (data.SprintTop5.split(',').includes("")) {
+                isIncompleet = true;
+                foutMelding += "➡️ Top 5 (Sprintrace)\n";
+            }
+            if (!data.SprintPoleStartnr) { isIncompleet = true; foutMelding += "➡️ Sprint Pole\n"; }
+        }
+    }
+
+    // Valideer de seizoensvoorspellingen (als het seizoen nog open is)
+    if (!window.isSeasonLocked && document.getElementById('season-drivers')) {
+        if (data.SeizoenCoureursTop10.split(',').includes("")) {
+            isIncompleet = true;
+            foutMelding += "➡️ Eindstand Coureurs (Alle 22 posities)\n";
+        }
+        if (data.SeizoenTeamsTop11.split(',').includes("")) {
+            isIncompleet = true;
+            foutMelding += "➡️ Eindstand Teams (Alle 11 posities)\n";
+        }
+        if (!data.MeesteRaceWinstStartnr) { isIncompleet = true; foutMelding += "➡️ Meeste Race Overwinningen\n"; }
+        if (!data.MeesteSprintWinstStartnr) { isIncompleet = true; foutMelding += "➡️ Meeste Sprint Overwinningen\n"; }
+        if (!data.MeesteRacePolesStartnr) { isIncompleet = true; foutMelding += "➡️ Meeste Race Poles\n"; }
+        if (!data.MeesteSprintPolesStartnr) { isIncompleet = true; foutMelding += "➡️ Meeste Sprint Poles\n"; }
+    }
+
+    // Blokkeer de fetch als er iets mist
+    if (isIncompleet) {
+        alert(foutMelding);
+        return; // Breekt de functie af, er wordt niets naar de server gestuurd
+    }
+    // --- EINDE VALIDATIE LOGICA ---
+
     try {
         const response = await fetch("/Voorspelling/Opslaan", {
             method: "POST",
