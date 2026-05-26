@@ -8,19 +8,15 @@ namespace F1Jokers.Services
 {
     public class PuntenService
     {
-        // --- Fields ---
         private readonly AppDbContext _context;
 
-        // --- Constructor ---
         public PuntenService(AppDbContext context)
         {
             _context = context;
         }
 
-        // --- Methods ---
         public async Task BerekenPuntenVoorRaceAsync(string raceId)
         {
-            // --- Inladen Data ---
             var uitslagen = await _context.Uitslagen.Where(u => u.RaceID == raceId).ToListAsync();
             var voorspellingen = await _context.Voorspellingen.Where(v => v.RaceID == raceId).ToListAsync();
             var regels = await _context.PuntenParameters.ToDictionaryAsync(p => p.Parameter, p => p.Waarde);
@@ -30,7 +26,6 @@ namespace F1Jokers.Services
             var top10StartNrs = uitslagen.Where(u => u.TypeResultaat.StartsWith("RacePos")).Select(u => u.StartNr).ToList();
             var top5SprintStartNrs = uitslagen.Where(u => u.TypeResultaat.StartsWith("SprintPos")).Select(u => u.StartNr).ToList();
 
-            // --- Berekening Per Voorspelling ---
             foreach (var voorspelling in voorspellingen)
             {
                 voorspelling.BehaaldePunten = 0;
@@ -38,7 +33,6 @@ namespace F1Jokers.Services
                 bool isRacePos = voorspelling.TypeVoorspelling.StartsWith("RacePos");
                 bool isSprintPos = voorspelling.TypeVoorspelling.StartsWith("SprintPos");
 
-                // OPLOSSING: Check eerst .HasValue en gebruik daarna .Value voor de .Contains check
                 if (isRacePos && voorspelling.StartNr.HasValue && top10StartNrs.Contains(voorspelling.StartNr.Value))
                 {
                     voorspelling.BehaaldePunten += regels["RacePosBijTop10"];
@@ -80,7 +74,6 @@ namespace F1Jokers.Services
             var alleVoorspellingen = await _context.Voorspellingen.ToListAsync();
             var alleUitslagen = await _context.Uitslagen.ToListAsync();
 
-            // --- Berekening Totale Punten ---
             foreach (var gebruiker in gebruikers)
             {
                 int totaalScore = alleVoorspellingen
@@ -90,7 +83,6 @@ namespace F1Jokers.Services
                 gebruiker.GebruikerPoints = totaalScore;
             }
 
-            // --- Berekening Champagne Flessen ---
             foreach (var g in gebruikers)
             {
                 g.Champagne = 0;
@@ -131,6 +123,63 @@ namespace F1Jokers.Services
                         }
                     }
                 }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task BerekenSeizoenBonusPuntenAsync(string seizoenId)
+        {
+            var uitslagen = await _context.Uitslagen.Where(u => u.RaceID == seizoenId).ToListAsync();
+            var voorspellingen = await _context.Voorspellingen.Where(v => v.RaceID == seizoenId).ToListAsync();
+
+            if (!uitslagen.Any())
+            {
+                throw new System.Exception("Geen officiële eindstanden gevonden in de database voor dit seizoen. Voer eerst de uitslag in.");
+            }
+
+            if (!voorspellingen.Any())
+            {
+                throw new System.Exception("Geen seizoensvoorspellingen gevonden om te berekenen.");
+            }
+
+            int puntenPerGoedeVoorspelling = 25;
+
+            foreach (var voorspelling in voorspellingen)
+            {
+                var exacteUitslag = uitslagen.FirstOrDefault(u => u.TypeResultaat == voorspelling.TypeVoorspelling);
+
+                if (exacteUitslag != null)
+                {
+                    if (voorspelling.TypeVoorspelling.Contains("TPos"))
+                    {
+                        if (exacteUitslag.StartNr == voorspelling.TeamId)
+                        {
+                            voorspelling.BehaaldePunten = puntenPerGoedeVoorspelling;
+                        }
+                    }
+                    else
+                    {
+                        if (exacteUitslag.StartNr == voorspelling.StartNr)
+                        {
+                            voorspelling.BehaaldePunten = puntenPerGoedeVoorspelling;
+                        }
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            var gebruikers = await _context.Gebruikers.ToListAsync();
+            var alleVoorspellingen = await _context.Voorspellingen.ToListAsync();
+
+            foreach (var gebruiker in gebruikers)
+            {
+                int totaalScore = alleVoorspellingen
+                    .Where(v => v.GebruikerID == gebruiker.GebruikerID)
+                    .Sum(v => v.BehaaldePunten);
+
+                gebruiker.GebruikerPoints = totaalScore;
             }
 
             await _context.SaveChangesAsync();
