@@ -9,7 +9,6 @@ using System;
 
 namespace F1Jokers.Controllers
 {
-    [Authorize]
     public class UitslagenController : Controller
     {
         private readonly AppDbContext _context;
