@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System;
 
 namespace F1Jokers.Services
 {
@@ -135,36 +136,25 @@ namespace F1Jokers.Services
 
             if (!uitslagen.Any())
             {
-                throw new System.Exception("Geen officiële eindstanden gevonden in de database voor dit seizoen. Voer eerst de uitslag in.");
+                throw new Exception("Geen officiële eindstanden gevonden in de database voor dit seizoen. Voer eerst de uitslag in.");
             }
 
             if (!voorspellingen.Any())
             {
-                throw new System.Exception("Geen seizoensvoorspellingen gevonden om te berekenen.");
+                throw new Exception("Geen seizoensvoorspellingen gevonden om te berekenen.");
             }
 
             int puntenPerGoedeVoorspelling = 25;
 
             foreach (var voorspelling in voorspellingen)
             {
+                voorspelling.BehaaldePunten = 0;
+
                 var exacteUitslag = uitslagen.FirstOrDefault(u => u.TypeResultaat == voorspelling.TypeVoorspelling);
 
-                if (exacteUitslag != null)
+                if (exacteUitslag != null && exacteUitslag.StartNr == voorspelling.StartNr)
                 {
-                    if (voorspelling.TypeVoorspelling.Contains("TPos"))
-                    {
-                        if (exacteUitslag.StartNr == voorspelling.TeamId)
-                        {
-                            voorspelling.BehaaldePunten = puntenPerGoedeVoorspelling;
-                        }
-                    }
-                    else
-                    {
-                        if (exacteUitslag.StartNr == voorspelling.StartNr)
-                        {
-                            voorspelling.BehaaldePunten = puntenPerGoedeVoorspelling;
-                        }
-                    }
+                    voorspelling.BehaaldePunten = puntenPerGoedeVoorspelling;
                 }
             }
 
