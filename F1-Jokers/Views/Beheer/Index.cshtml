@@ -90,7 +90,7 @@
 
             <form asp-controller="Beheer" asp-action="BerekenSeizoenBonus" method="post" class="row g-3 align-items-center">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="seizoenId" value="Seizoen@DateTime.Now.Year" />
+                <input type="hidden" name="seizoenId" value="Seizoen2026" />
 
                 <div class="col-auto">
                     <button type="submit" class="btn btn-danger fw-bold text-white px-4" onclick="return confirm('Weet je zeker dat je de seizoens-bonuspunten voor @DateTime.Now.Year definitief wilt berekenen? Dit overschrijft de huidige ranglijst-scores.');">

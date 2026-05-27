@@ -50,11 +50,14 @@ namespace F1Jokers.Controllers
 
             CoureurResultaat MaakResultaat(Uitslag u, int pos = 0)
             {
-                var c = coureurs.FirstOrDefault(x => x.Startnr == u.StartNr);
+                // FIX 1: Voeg .GetValueOrDefault() toe bij de vergelijking
+                var c = coureurs.FirstOrDefault(x => x.Startnr == u.StartNr.GetValueOrDefault());
+
                 return new CoureurResultaat
                 {
                     Positie = pos,
-                    Startnr = u.StartNr,
+                    // FIX 2: Voeg .GetValueOrDefault() toe bij het toewijzen
+                    Startnr = u.StartNr.GetValueOrDefault(),
                     Naam = c != null ? $"{c.Voornaam} {c.Achternaam}" : "Onbekend",
                     Team = c?.Team?.Teamnaam ?? "Onbekend"
                 };
