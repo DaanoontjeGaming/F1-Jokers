@@ -1,58 +1,103 @@
-﻿@{
-    ViewData["Title"] = "Controlepaneel";
+﻿@model dynamic
+
+@{
+    ViewData["Title"] = "Controlepaneel Beheer";
+    var kalenderLijst = ViewBag.KalenderLijst as List<F1Jokers.Models.Kalender> ?? new List<F1Jokers.Models.Kalender>();
 }
 
-<div class="mt-4">
-    <h1 class="text-danger"><i class="bi bi-gear-wide-connected"></i> Beheerder Controlepaneel</h1>
-    <p class="lead">Welkom terug, @User.Identity?.Name. Hier kun je de race-instellingen en gebruikers beheren.</p>
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-white fw-bold text-uppercase" style="letter-spacing: 1px;">
+            <i class="bi bi-gear-wide-connected text-danger me-2"></i> Controlepaneel Beheer
+        </h1>
+        <p class="text-light opacity-75">Beheer de racekalender, haal officiële uitslagen op en verwerk de poule-punten.</p>
+    </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <div class="alert alert-success alert-dismissible fade show text-center border-success mb-4" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="row mt-4">
-        <div class="col-md-5">
-            <div class="card bg-secondary text-white border-secondary mb-3">
-                <div class="card-body text-center">
-                    <i class="bi bi-cloud-arrow-down-fill fs-1 text-warning"></i>
-                    <h5 class="card-title mt-2">Uitslagen Ophalen API</h5>
-                    <p class="card-text small">Haal de officiële uitslagen van het afgelopen weekend op via Jolpica en bereken de poule-punten.</p>
-                    
-                    <form asp-controller="Beheer" asp-action="HaalUitslagenOp" method="post">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show text-center border-danger mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                    <i class="bi bi-cloud-arrow-down-fill text-danger me-2"></i> Race Uitslagen Verwerken
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-light opacity-75 small mb-4">
+                        Selecteer een verreden Grand Prix om de uitslag via de API binnen te halen. Dit berekent direct alle posities, snelste rondes en de weekend-scores voor de poule.
+                    </p>
+
+                    <form asp-controller="Beheer" asp-action="HaalUitslagenOp" method="post" class="row g-3 align-items-center">
                         @Html.AntiForgeryToken()
-    
-                        <div class="input-group input-group-sm mb-3 mt-3">
-                            <span class="input-group-text bg-dark text-white border-secondary">Race</span>
-                            <select name="raceId" class="form-select bg-dark text-white border-secondary" required>
-                                <option value="">Kies een race uit de kalender...</option>
-                                @if (ViewBag.KalenderLijst != null)
+                        <div class="col-12">
+                            <select id="raceIdSelect" name="raceId" class="form-select bg-dark text-white border-secondary" required>
+                                <option value="">-- Kies een race --</option>
+                                @foreach (var race in kalenderLijst)
                                 {
-                                    foreach (var race in ViewBag.KalenderLijst)
-                                    {
-                                        <option value="@race.RaceID">@race.Racenaam (@race.RaceID)</option>
-                                    }
+                                    <option value="@race.RaceID">@race.Racenaam @(race.IsVerwerkt ? "(Al verwerkt)" : "")</option>
                                 }
                             </select>
                         </div>
-
-                        <button type="submit" class="btn btn-warning fw-bold btn-sm w-100">
-                            <i class="bi bi-download me-1"></i> Nu Ophalen
-                        </button>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-danger fw-bold w-100">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Uitslagen &amp; Punten Ophalen
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
-        
+
+        <div class="col-md-6">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                    <i class="bi bi-shield-lock-fill text-danger me-2"></i> Systeemonderhoud &amp; Beveiliging
+                </div>
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <p class="text-light opacity-75 small mb-4">
+                        Voer noodzakelijke database- en beveiligingsupdates uit. De migratie-knop converteert oude, ongehashte wachtwoorden veilig naar unieke BCrypt-hashes.
+                    </p>
+                    <a asp-controller="Beheer" asp-action="MigreerWachtwoorden" class="btn btn-outline-danger fw-bold w-100 mt-auto">
+                        <i class="bi bi-key-fill me-1"></i> Migreer Wachtwoorden naar BCrypt
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-dark border-secondary mt-4 shadow-sm">
+        <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+            <i class="bi bi-star-fill text-danger me-2"></i> Seizoensafsluiting &amp; Bonuspunten
+        </div>
+        <div class="card-body p-4">
+            <p class="text-light opacity-75 small mb-4">
+                Vergelijk de langetermijn-seizoensvoorspellingen (Eindstand Coureurs, Eindstand Teams en alle overige winnaars-bonusvragen) met de ingevoerde officiële einduitslag. Elke correcte voorspelling levert de deelnemer 25 punten op.
+                <strong>Let op: dit wordt berekend voor het huidige seizoen (@DateTime.Now.Year).</strong>
+            </p>
+
+            <form asp-controller="Beheer" asp-action="BerekenSeizoenBonus" method="post" class="row g-3 align-items-center">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="seizoenId" value="Seizoen2026" />
+
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-danger fw-bold text-white px-4" onclick="return confirm('Weet je zeker dat je de seizoens-bonuspunten voor @DateTime.Now.Year definitief wilt berekenen? Dit overschrijft de huidige ranglijst-scores.');">
+                        <i class="bi bi-calculator me-1"></i> Bereken Seizoensbonus @DateTime.Now.Year
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
