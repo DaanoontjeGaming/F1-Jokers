@@ -90,7 +90,7 @@
 
             <form asp-controller="Beheer" asp-action="BerekenSeizoenBonus" method="post" class="row g-3 align-items-center">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="seizoenId" value="Seizoen2026" />
+                <input type="hidden" name="seizoenId" value="Seizoen@DateTime.Now.Year" />
 
                 <div class="col-auto">
                     <button type="submit" class="btn btn-danger fw-bold text-white px-4" onclick="return confirm('Weet je zeker dat je de seizoens-bonuspunten voor @DateTime.Now.Year definitief wilt berekenen? Dit overschrijft de huidige ranglijst-scores.');">
@@ -100,4 +100,20 @@
             </form>
         </div>
     </div>
+
+    <div class="card bg-dark border-secondary mt-4 shadow-sm">
+        <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+            <i class="bi bi-file-earmark-spreadsheet-fill text-danger me-2"></i> Ruwe Data Export (CSV)
+        </div>
+        <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap">
+            <p class="text-light opacity-75 small mb-0 w-75">
+                Genereer een compleet overzicht van alle voorspellingen, gekoppeld aan de gebruikers, actuele uitslagen en de kalender. Ideaal voor data-analyse of archivering in Excel.
+            </p>
+
+            <a asp-controller="Beheer" asp-action="ExporteerEindstandCsv" class="btn btn-success fw-bold px-4 mt-3 mt-md-0">
+                <i class="bi bi-download me-1"></i> Download CSV
+            </a>
+        </div>
+    </div>
+
 </div>

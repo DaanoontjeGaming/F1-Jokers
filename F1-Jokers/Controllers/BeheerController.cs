@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using F1Jokers.Services;
 using F1Jokers.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace F1Jokers.Controllers
 {
@@ -51,7 +52,7 @@ namespace F1Jokers.Controllers
                 await _puntenService.BerekenPuntenVoorRaceAsync(lokaalRaceId);
                 await _puntenService.BerekenPuntenVoorRaceAsync(lokaalRaceId + "S");
 
-                TempData["SuccessMessage"] = $"De uitslagen, punten én flessen zijn succesvol verwerkt voor Race ID: {lokaalRaceId}!";
+                TempData["SuccessMessage"] = $"De uitslagen, punten én flessen zijn suksesvol verwerkt voor Race ID: {lokaalRaceId}!";
             }
             catch (System.Exception ex)
             {
@@ -113,6 +114,47 @@ namespace F1Jokers.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExporteerEindstandCsv()
+        {
+
+            var gebruikers = await _context.Gebruikers.ToDictionaryAsync(g => g.GebruikerID);
+            var kalender = await _context.Kalender.ToDictionaryAsync(k => k.RaceID);
+            var uitslagen = await _context.Uitslagen.ToListAsync();
+            var voorspellingen = await _context.Voorspellingen.OrderBy(v => v.GebruikerID).ThenBy(v => v.RaceID).ToListAsync();
+
+
+            var csv = new System.Text.StringBuilder();
+
+            csv.AppendLine("sep=;");
+
+            csv.AppendLine("Username;Totale Punten;Race ID;Racenaam;Type Voorspelling;Voorspeld StartNr;Voorspeld TeamID;Werkelijke Uitslag StartNr;Werkelijke Uitslag TeamID;Behaalde Punten op Voorspelling");
+
+            foreach (var v in voorspellingen)
+            {
+                var gebruiker = gebruikers.GetValueOrDefault(v.GebruikerID);
+                var race = kalender.GetValueOrDefault(v.RaceID);
+                var uitslag = uitslagen.FirstOrDefault(u => u.RaceID == v.RaceID && u.TypeResultaat == v.TypeVoorspelling);
+
+                var username = gebruiker?.Username ?? "Onbekend";
+                var totalePunten = gebruiker?.GebruikerPoints ?? 0;
+                var raceNaam = race?.Racenaam ?? "Onbekend";
+
+                var voorspeldStartNr = v.StartNr?.ToString() ?? "";
+                var voorspeldTeamId = v.TeamId?.ToString() ?? "";
+
+                var uitslagStartNr = uitslag?.StartNr?.ToString() ?? "";
+                var uitslagTeamId = uitslag?.TeamId?.ToString() ?? ""; 
+
+                csv.AppendLine($"{username};{totalePunten};{v.RaceID};{raceNaam};{v.TypeVoorspelling};{voorspeldStartNr};{voorspeldTeamId};{uitslagStartNr};{uitslagTeamId};{v.BehaaldePunten}");
+            }
+
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+            string bestandsnaam = $"F1_Jokers_Export_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+
+            return File(bytes, "text/csv", bestandsnaam);
         }
     }
 }
