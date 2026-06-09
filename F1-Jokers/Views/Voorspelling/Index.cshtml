@@ -1,0 +1,481 @@
+﻿@model F1Jokers.Models.VoorspellingViewModel
+@inject F1Jokers.Data.AppDbContext DbContext
+
+@{
+    var gesorteerdeCoureurs = Model.Coureurs?
+        .OrderBy(c => c.Team != null ? c.Team.Teamnaam : "ZZZ")
+        .ThenBy(c => c.Startnr)
+        .ToList();
+
+    var gesorteerdeTeams = gesorteerdeCoureurs?
+        .Where(c => c.Team != null)
+        .GroupBy(c => c.Team.Teamnaam)
+        .Select(g => g.First())
+        .OrderBy(c => c.Team.Teamnaam)
+        .ToList();
+
+    // --- DEADLINE CONTROLE ---
+    bool isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Beheerder");
+
+    // Check de deadline voor de huidige geselecteerde race
+    bool raceLocked = Model.HuidigeKalenderItem != null && DateTime.Now > Model.HuidigeKalenderItem.Deadline && !isAdmin;
+
+    // Check de deadline voor het seizoen
+    var seizoenItem = DbContext.Kalender.FirstOrDefault(k => k.RaceID.StartsWith("Seizoen"));
+    bool seasonLocked = seizoenItem != null && DateTime.Now > seizoenItem.Deadline && !isAdmin;
+}
+
+@if (User.Identity?.IsAuthenticated != true)
+{
+    <div class="container py-5">
+        <div class="text-center p-5 bg-dark border border-secondary rounded shadow" style="border-top: 5px solid var(--f1-red) !important;">
+            <i class="bi bi-lock-fill text-danger display-1 mb-4"></i>
+            <h1 class="text-white h2 fw-bold">TOEGANG GEWEIGERD</h1>
+            <p class="text-light opacity-75 mb-4">Je moet ingelogd zijn om deel te nemen aan de F1-Jokers poule en voorspellingen te doen.</p>
+
+            <a asp-controller="Account" asp-action="Inloggen" class="btn btn-danger btn-lg px-5 fw-bold shadow">
+                <i class="bi bi-box-arrow-in-right me-2"></i> INLOGGEN
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <section class="race-info text-center mb-4">
+        <div class="mb-4">
+            <form method="get" action="/Voorspelling/Index">
+
+                <label for="raceIdSelector" class="visually-hidden">Kies een Grand Prix</label>
+                <select id="raceIdSelector" name="raceId" class="form-select bg-dark text-white border-secondary w-auto d-inline-block" onchange="this.form.submit()">
+                    @if (Model.VolledigeKalender != null)
+                    {
+                        foreach (var item in Model.VolledigeKalender)
+                        {
+                            <option value="@item.RaceID" selected="@(Model.HuidigeKalenderItem != null && item.RaceID == Model.HuidigeKalenderItem.RaceID)">@item.Racenaam</option>
+                        }
+                    }
+                </select>
+            </form>
+        </div>
+
+        <div class="race-tabs d-flex flex-wrap justify-content-center gap-2 mb-3">
+            <button type="button" class="btn-tab active rounded" onclick="switchView('main-race')">Hoofdrace</button>
+            @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
+            {
+                <button type="button" class="btn-tab rounded" onclick="switchView('sprint-race')">Sprintrace</button>
+            }
+            <button type="button" class="btn-tab btn-season rounded" onclick="switchView('season-drivers')">Seizoen Coureurs</button>
+            <button type="button" class="btn-tab btn-season rounded" onclick="switchView('season-teams')">Seizoen Teams</button>
+        </div>
+
+        <div class="mb-4 d-none d-lg-block">
+            <button type="button" id="btn-toggle-ui" class="btn btn-info fw-bold" onclick="toggleAccessibilityMode()">
+                <i class="bi bi-universal-access"></i> Wissel naar Toegankelijk Voorspellen (Dropdowns)
+            </button>
+        </div>
+
+        <div class="deadline-container mb-3">
+            <div id="deadline-status" class="deadline-badge d-inline-block p-2 border border-danger text-danger fw-bold">
+                <i class="bi bi-clock-fill"></i>
+                <span id="deadline-text">
+                    @(Model.HuidigeKalenderItem != null ? "Deadline: " + Model.HuidigeKalenderItem.Deadline.ToString("dd MMMM yyyy - HH:mm", new System.Globalization.CultureInfo("nl-NL")) : "Geen data beschikbaar")
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <div id="voorspel-container" class="prediction-container d-flex justify-content-center gap-4 responsive-layout">
+
+        <section class="column desktop-only" id="selection-pool" style="width: 420px; max-width: 100%;">
+            <h2 class="column-title border-bottom border-danger pb-2 mb-3">Keuzelijst</h2>
+
+            <div class="scrollable-pool">
+                <ul class="driver-list mb-4 race-pool list-unstyled" id="pool-main" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 100px;">
+                    @if (gesorteerdeCoureurs != null)
+                    {
+                        foreach (var coureur in gesorteerdeCoureurs)
+                        {
+                            <li class="driver-card border border-secondary p-2 mb-2 d-flex align-items-center"
+                                draggable="@(raceLocked ? "false" : "true")"
+                                ondragstart="@(raceLocked ? "" : "drag(event)")"
+                                id="main-c-@coureur.Startnr" data-id="@coureur.Startnr">
+                                <div style="width: 230px;">
+                                    <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; width: 25px;">@coureur.Startnr</span>
+                                    <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
+                                </div>
+                                <span class="dr-team small text-light opacity-75 text-nowrap">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
+                            </li>
+                        }
+                    }
+                </ul>
+
+                @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
+                {
+                    <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-sprint" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 100px;">
+                        @if (gesorteerdeCoureurs != null)
+                        {
+                            foreach (var coureur in gesorteerdeCoureurs)
+                            {
+                                <li class="driver-card border border-secondary p-2 mb-2 d-flex align-items-center"
+                                    draggable="@(raceLocked ? "false" : "true")"
+                                    ondragstart="@(raceLocked ? "" : "drag(event)")"
+                                    id="sprint-c-@coureur.Startnr" data-id="@coureur.Startnr">
+                                    <div style="width: 230px;">
+                                        <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; width: 25px;">@coureur.Startnr</span>
+                                        <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
+                                    </div>
+                                    <span class="dr-team small text-light opacity-75 text-nowrap">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
+                                </li>
+                            }
+                        }
+                    </ul>
+                }
+
+                <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-season-drivers" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 100px;">
+                    @if (gesorteerdeCoureurs != null)
+                    {
+                        foreach (var coureur in gesorteerdeCoureurs)
+                        {
+                            <li class="driver-card border border-secondary p-2 mb-2 d-flex align-items-center"
+                                draggable="@(seasonLocked ? "false" : "true")"
+                                ondragstart="@(seasonLocked ? "" : "drag(event)")"
+                                id="sdriver-c-@coureur.Startnr" data-id="@coureur.Startnr">
+                                <div style="width: 230px;">
+                                    <span class="dr-number text-danger fw-bold me-3" style="display: inline-block; width: 25px;">@coureur.Startnr</span>
+                                    <span class="dr-name">@coureur.Voornaam @coureur.Achternaam</span>
+                                </div>
+                                <span class="dr-team small text-light opacity-75 text-nowrap">@(coureur.Team != null ? coureur.Team.Teamnaam : "")</span>
+                            </li>
+                        }
+                    }
+                </ul>
+
+                <ul class="driver-list mb-4 race-pool hide-section list-unstyled" id="pool-season-teams" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 100px;">
+                    @if (gesorteerdeTeams != null)
+                    {
+                        foreach (var teamRep in gesorteerdeTeams)
+                        {
+                            <li class="team-card border border-secondary p-2 mb-2 d-flex align-items-center"
+                                draggable="@(seasonLocked ? "false" : "true")"
+                                ondragstart="@(seasonLocked ? "" : "drag(event)")"
+                                id="team-c-@teamRep.Team.TeamId" data-id="@teamRep.Team.TeamId">
+                                <div style="width: 230px;">
+                                    <span class="dr-name fw-bold">@teamRep.Team.Teamnaam</span>
+                                </div>
+                                <span class="t-pu small text-light opacity-75 text-nowrap">@teamRep.Team.Powerunit</span>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+        </section>
+
+        <section class="column race-section" id="main-race" style="width: 420px; max-width: 100%;">
+            <h2 class="column-title border-bottom border-danger pb-2 mb-3">Top 10 (Race)</h2>
+            <div class="drop-zones mb-4">
+                @for (int i = 1; i <= 10; i++)
+                {
+                    <div class="slot d-flex mb-2 align-items-center">
+                        <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
+                        <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="race-pos@(i)" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+
+                        <label for="mobile-race-pos@(i)" class="visually-hidden">Positie @i</label>
+                        <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-main" id="mobile-race-pos@(i)" @(raceLocked ? "disabled" : "")>
+                            <option value="">Kies coureur...</option>
+                            @if (gesorteerdeCoureurs != null)
+                            {
+                                foreach (var c in gesorteerdeCoureurs)
+                                {
+                                    <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+            </div>
+            <div class="bonus-section mt-4 p-3 border border-secondary rounded">
+                <h3 class="column-title h5 text-white">Race Extra</h3>
+                <div class="mb-3">
+                    <label for="bonus-pole" class="text-danger small fw-bold d-block mb-1">Pole Position</label>
+                    <select class="form-select bg-dark text-white border-secondary" id="bonus-pole" @(raceLocked ? "disabled" : "")>
+                        <option value="">Kies coureur...</option>
+                        @if (gesorteerdeCoureurs != null)
+                        {
+                            foreach (var c in gesorteerdeCoureurs)
+                            {
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="mb-0">
+                    <label for="bonus-fastest" class="text-danger small fw-bold d-block mb-1">Snelste Ronde</label>
+                    <select class="form-select bg-dark text-white border-secondary" id="bonus-fastest" @(raceLocked ? "disabled" : "")>
+                        <option value="">Kies coureur...</option>
+                        @if (gesorteerdeCoureurs != null)
+                        {
+                            foreach (var c in gesorteerdeCoureurs)
+                            {
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        @if (Model.HuidigeKalenderItem != null && Model.HuidigeKalenderItem.HasSprintRace)
+        {
+            <section class="column race-section hide-section" id="sprint-race" style="width: 420px; max-width: 100%;">
+                <h2 class="column-title border-bottom border-danger pb-2 mb-3">Top 5 (Sprint)</h2>
+                <div class="drop-zones mb-4">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <div class="slot d-flex mb-2 align-items-center">
+                            <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
+                            <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="sprint-pos@(i)" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+                            <label for="mobile-sprint-pos@(i)" class="visually-hidden">Sprint Positie @i</label>
+                            <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-sprint" id="mobile-sprint-pos@(i)" @(raceLocked ? "disabled" : "")>
+                                <option value="">Kies coureur...</option>
+                                @if (gesorteerdeCoureurs != null)
+                                {
+                                    foreach (var c in gesorteerdeCoureurs)
+                                    {
+                                        <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    }
+                </div>
+                <div class="bonus-section mt-4 p-3 border border-secondary rounded">
+                    <h3 class="column-title h5 text-white">Sprint Extra</h3>
+                    <div class="mb-0">
+                        <label for="bonus-sprint-pole" class="text-danger small fw-bold d-block mb-1">Sprint Pole</label>
+                        <select class="form-select bg-dark text-white border-secondary" id="bonus-sprint-pole" @(raceLocked ? "disabled" : "")>
+                            <option value="">Kies coureur...</option>
+                            @if (gesorteerdeCoureurs != null)
+                            {
+                                foreach (var c in gesorteerdeCoureurs)
+                                {
+                                    <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </section>
+        }
+
+        <section class="column race-section hide-section" id="season-drivers" style="width: 420px; max-width: 100%;">
+            <h2 class="column-title border-bottom border-danger pb-2 mb-3">Eindstand Coureurs (Top 22)</h2>
+            <div class="drop-zones mb-4">
+                @for (int i = 1; i <= 22; i++)
+                {
+                    <div class="slot d-flex mb-2 align-items-center">
+                        <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
+                        <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="sdriver-pos@(i)" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+                        <label for="mobile-sdriver-pos@(i)" class="visually-hidden">Seizoen Coureur Positie @i</label>
+                        <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-sdrivers" id="mobile-sdriver-pos@(i)" @(seasonLocked ? "disabled" : "")>
+                            <option value="">Kies coureur...</option>
+                            @if (gesorteerdeCoureurs != null)
+                            {
+                                foreach (var c in gesorteerdeCoureurs)
+                                {
+                                    <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="column race-section hide-section" id="season-teams" style="width: 420px; max-width: 100%;">
+            <h2 class="column-title border-bottom border-danger pb-2 mb-3">Eindstand Teams (Top 11)</h2>
+            <div class="drop-zones mb-4">
+                @for (int i = 1; i <= 11; i++)
+                {
+                    <div class="slot d-flex mb-2 align-items-center">
+                        <span class="pos-num bg-danger text-white px-3 py-2 fw-bold text-center" style="min-width: 40px;">@i</span>
+                        <div class="drop-target border border-secondary p-2 flex-grow-1 ms-2 desktop-only" id="steam-pos@(i)" ondrop="drop(event)" ondragover="allowDrop(event)" style="min-height: 40px;">...</div>
+                        <label for="mobile-steam-pos@(i)" class="visually-hidden">Seizoen Team Positie @i</label>
+                        <select class="form-select bg-dark text-white border-secondary flex-grow-1 ms-2 mobile-only mobile-select-steams" id="mobile-steam-pos@(i)" @(seasonLocked ? "disabled" : "")>
+                            <option value="">Kies team...</option>
+                            @if (gesorteerdeTeams != null)
+                            {
+                                foreach (var teamRep in gesorteerdeTeams)
+                                {
+                                    <option value="@teamRep.Team.TeamId">@teamRep.Team.Teamnaam &nbsp;&nbsp;|&nbsp;&nbsp; @teamRep.Team.Powerunit</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+            </div>
+
+            <div class="bonus-section mt-4 p-3 border border-secondary rounded">
+                <h3 class="column-title h5 text-white">Seizoen Extra</h3>
+                <div class="mb-3">
+                    <label for="season-most-wins" class="text-danger small fw-bold d-block mb-1">Meeste Race Overwinningen</label>
+                    <select class="form-select bg-dark text-white border-secondary" id="season-most-wins" @(seasonLocked ? "disabled" : "")>
+                        <option value="">Kies coureur...</option>
+                        @if (gesorteerdeCoureurs != null)
+                        {
+                            foreach (var c in gesorteerdeCoureurs)
+                            {
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="season-most-sprint-wins" class="text-danger small fw-bold d-block mb-1">Meeste Sprint Overwinningen</label>
+                    <select class="form-select bg-dark text-white border-secondary" id="season-most-sprint-wins" @(seasonLocked ? "disabled" : "")>
+                        <option value="">Kies coureur...</option>
+                        @if (gesorteerdeCoureurs != null)
+                        {
+                            foreach (var c in gesorteerdeCoureurs)
+                            {
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="season-most-poles" class="text-danger small fw-bold d-block mb-1">Meeste Race Poles</label>
+                    <select class="form-select bg-dark text-white border-secondary" id="season-most-poles" @(seasonLocked ? "disabled" : "")>
+                        <option value="">Kies coureur...</option>
+                        @if (gesorteerdeCoureurs != null)
+                        {
+                            foreach (var c in gesorteerdeCoureurs)
+                            {
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="mb-0">
+                    <label for="season-most-sprint-poles" class="text-danger small fw-bold d-block mb-1">Meeste Sprint Poles</label>
+                    <select class="form-select bg-dark text-white border-secondary" id="season-most-sprint-poles" @(seasonLocked ? "disabled" : "")>
+                        <option value="">Kies coureur...</option>
+                        @if (gesorteerdeCoureurs != null)
+                        {
+                            foreach (var c in gesorteerdeCoureurs)
+                            {
+                                <option value="@c.Startnr">@c.Startnr &nbsp;&nbsp;|&nbsp;&nbsp; @c.Voornaam @c.Achternaam &nbsp;&nbsp;|&nbsp;&nbsp; @(c.Team != null ? c.Team.Teamnaam : "")</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="action-area" class="text-center mt-5 mb-5">
+        <button id="btn-opslaan" type="button" class="btn btn-lg btn-danger px-5 py-3 fw-bold shadow" onclick="verstuurVoorspelling()">
+            VOORSPELLING OPSLAAN
+        </button>
+
+        <div id="alert-gesloten" class="alert alert-warning text-center fw-bold border-warning" style="display: none; max-width: 800px; margin: 0 auto;">
+            <i class="bi bi-lock-fill"></i> DE DEADLINE IS VERSTREKEN. JE KUNT JE VOORSPELLINGEN ALLEEN NOG BEKIJKEN.
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/voorspellen.js" asp-append-version="true"></script>
+    <script>
+        window.isRaceLocked = @(raceLocked.ToString().ToLower());
+        window.isSeasonLocked = @(seasonLocked.ToString().ToLower());
+
+        const origineleSwitchView = window.switchView;
+        window.switchView = function (tabId) {
+        if (typeof origineleSwitchView === "function") {
+        origineleSwitchView(tabId);
+        }
+
+        let isLocked = false;
+        if (tabId === 'season-drivers' || tabId === 'season-teams') {
+        isLocked = window.isSeasonLocked;
+        } else {
+        isLocked = window.isRaceLocked;
+        }
+
+        const btnOpslaan = document.getElementById('btn-opslaan');
+        const alertGesloten = document.getElementById('alert-gesloten');
+        const selectionPool = document.getElementById('selection-pool');
+
+        if (btnOpslaan && alertGesloten) {
+        if (isLocked) {
+
+        btnOpslaan.style.display = 'none';
+        alertGesloten.style.display = 'block';
+        if (selectionPool) selectionPool.style.display = 'none';
+        } else {
+
+        btnOpslaan.style.display = 'inline-block';
+        alertGesloten.style.display = 'none';
+        if (selectionPool) selectionPool.style.display = '';
+        }
+        }
+        };
+        document.addEventListener("DOMContentLoaded", function () {
+        window.switchView('main-race');
+
+        const dbData = @Html.Raw(Json.Serialize(Model.BestaandeVoorspellingen));
+
+        if (!dbData || dbData.length === 0) return;
+
+        dbData.forEach(v => {
+        let typeV = (v.typeVoorspelling || v.TypeVoorspelling || "").trim();
+
+        // AANGEPAST: Hij zoekt nu naast het Startnr ook actief naar TeamId (voor het inladen van de teams)
+        let dataId = String(v.startNr ?? v.StartNr ?? v.startnr ?? v.teamId ?? v.TeamId ?? "").trim();
+
+        if (!typeV || dataId === "") return;
+
+        const bonusMap = {
+        "RacePole": "bonus-pole", "SnelsteRonde": "bonus-fastest", "SprintPole": "bonus-sprint-pole",
+        "MeesteRaceWinst": "season-most-wins", "MeesteSprintWinst": "season-most-sprint-wins",
+        "MeesteRacePoles": "season-most-poles", "MeesteSprintPoles": "season-most-sprint-poles"
+        };
+        if (bonusMap[typeV]) { const el = document.getElementById(bonusMap[typeV]);
+        if (el) el.value = dataId; return; }
+
+        let zoneId = "", poolId = "", mobId = "";
+        if (typeV.includes("RacePos")) { let n = typeV.replace("RacePos", ""); zoneId = "race-pos" + n; poolId = "pool-main";
+        mobId = "mobile-race-pos" + n; }
+        else if (typeV.includes("SprintPos")) { let n = typeV.replace("SprintPos", "");
+        zoneId = "sprint-pos" + n; poolId = "pool-sprint"; mobId = "mobile-sprint-pos" + n;
+        }
+        else if (typeV.includes("SeizoenCPos")) { let n = typeV.replace("SeizoenCPos", "");
+        zoneId = "sdriver-pos" + n; poolId = "pool-season-drivers"; mobId = "mobile-sdriver-pos" + n;
+        }
+        else if (typeV.includes("SeizoenTPos")) { let n = typeV.replace("SeizoenTPos", "");
+        zoneId = "steam-pos" + n; poolId = "pool-season-teams"; mobId = "mobile-steam-pos" + n;
+        }
+
+        if (zoneId && poolId) {
+        const dropZone = document.getElementById(zoneId);
+        const card = document.querySelector("#" + poolId + " li[data-id='" + dataId + "']");
+        if (dropZone && card) {
+        const clone = card.cloneNode(true);
+        clone.id = "clone-" + card.id + "-target-" + dropZone.id;
+        clone.setAttribute("ondragstart", "drag(event)");
+        clone.setAttribute("data-id", dataId);
+
+        clone.classList.remove("hide-section");
+
+        dropZone.innerHTML = "";
+        dropZone.appendChild(clone);
+        card.classList.add("hide-section");
+        }
+        }
+        if (mobId) { const el = document.getElementById(mobId);
+        if (el) el.value = dataId; }
+        });
+        });
+    </script>
+}

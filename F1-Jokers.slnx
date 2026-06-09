@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="F1-Jokers/F1Jokers.csproj" />
+  <Project Path="F1Jokers.Tests/F1Jokers.Tests.csproj" Id="230d3870-b202-4cf5-9bab-fa397e769515" />
+</Solution>

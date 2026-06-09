@@ -1,0 +1,118 @@
+﻿@{
+    var isLoginPage = ViewContext.RouteData.Values["controller"]?.ToString() == "Account" &&
+                       ViewContext.RouteData.Values["action"]?.ToString() == "Inloggen";
+}
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - F1 Jokers</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="bg-dark text-white d-flex flex-column min-vh-100">
+
+    @if (!isLoginPage)
+    {
+        <div class="header-nav-wrapper bg-dark border-bottom border-secondary sticky-top">
+            <div class="container d-flex justify-content-between align-items-center p-2 p-md-3">
+
+                <a asp-controller="Home" asp-action="Index" class="logo-link">
+                    <img src="~/images/F1Jokers.png" alt="F1 Jokers Logo" class="app-logo" />
+                </a>
+
+                <nav class="main-navigation">
+                    <div class="nav-container d-flex gap-md-4">
+                        <a asp-controller="Home" asp-action="Index" class="nav-item text-white text-decoration-none text-center">
+                            <i class="bi bi-house-door-fill"></i> <span class="nav-text">Home</span>
+                        </a>
+
+                        <a asp-controller="Voorspelling" asp-action="Index" class="nav-item text-white text-decoration-none text-center">
+                            <i class="bi bi-gear-fill"></i> <span class="nav-text">Voorspellen</span>
+                        </a>
+
+                        <a asp-controller="Poule" asp-action="Index" class="nav-item text-white text-decoration-none text-center">
+                            <i class="bi bi-trophy"></i> <span class="nav-text">Poule</span>
+                        </a>
+
+                        <a asp-controller="Uitslagen" asp-action="Index" class="nav-item text-white text-decoration-none text-center">
+                            <i class="bi bi-flag"></i> <span class="nav-text">Uitslagen</span>
+                        </a>
+
+                        <a href="#" class="nav-item text-white text-decoration-none text-center">
+                            <i class="bi bi-person-circle"></i> <span class="nav-text">Profiel</span>
+                        </a>
+                    </div>
+                </nav>
+
+                <div class="user-info text-end d-flex align-items-center">
+
+                    <button id="contrast-toggle" class="btn btn-sm btn-outline-warning me-3" onclick="toggleHighContrast()" aria-label="Wissel naar hoog contrast modus">
+                        <i class="bi bi-circle-half"></i> Contrast
+                    </button>
+
+                    <i class="bi bi-person-circle text-danger fs-4 me-2"></i>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="text-uppercase fw-bold text-white me-2">@User.Identity.Name</span>
+
+                        @if (User.IsInRole("Beheerder"))
+                        {
+                            <a asp-controller="Beheer" asp-action="Index" class="btn btn-sm btn-outline-warning me-2" title="Controlepaneel">
+                                <i class="bi bi-gear-wide-connected"></i>
+                            </a>
+                        }
+
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0 d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Uitloggen">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Inloggen" class="btn btn-sm btn-danger fw-bold">
+                            <i class="bi bi-box-arrow-in-right"></i> Inloggen
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <main class="container flex-grow-1 mt-4">
+        @RenderBody()
+    </main>
+
+    @if (!isLoginPage)
+    {
+        <footer class="mt-5 p-4 border-top border-secondary bg-dark text-center text-muted">
+            <div class="container">
+                <p class="small mb-0">&copy; @DateTime.Now.Year - F1 Jokers. Alle rechten voorbehouden.</p>
+            </div>
+        </footer>
+    }
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        function toggleHighContrast() {
+        const body = document.body;
+        body.classList.toggle('high-contrast');
+        localStorage.setItem('highContrast', body.classList.contains('high-contrast'));
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+        if (localStorage.getItem('highContrast') === 'true') {
+        document.body.classList.add('high-contrast');
+        }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

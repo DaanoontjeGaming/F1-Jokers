@@ -1,4 +1,4 @@
-## .gitignore voor ASP.NET Core (F1-Jokers project)
+﻿## .gitignore voor ASP.NET Core (F1-Jokers project)
 
 # Build resultaten
 [Bb]in/

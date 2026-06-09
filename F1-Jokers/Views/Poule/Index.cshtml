@@ -1,0 +1,194 @@
+﻿@using System
+@model F1Jokers.Models.PouleViewModel
+
+@{
+    ViewData["Title"] = "Poule Klassement";
+    var veiligeRanglijst = Model?.Ranglijst ?? new List<GebruikerKlassementItem>();
+
+    var eersten = veiligeRanglijst.Where(p => p.Positie == 1).ToList();
+    var tweeden = veiligeRanglijst.Where(p => p.Positie == 2).ToList();
+    var derden = veiligeRanglijst.Where(p => p.Positie == 3).ToList();
+}
+
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-white fw-bold text-uppercase" style="letter-spacing: 1px;">
+            <i class="bi bi-trophy-fill text-warning me-2"></i> @(Model?.AlgemenePouleNaam ?? "F1-JOKERS POULE TUSSENSTAND")
+        </h1>
+        <p class="text-light opacity-75 mb-4">Wie heeft de beste voorspellingen en kroont zichzelf tot de ultieme F1-Joker?</p>
+
+        <div class="mb-2">
+            <form method="get" action="@Url.Action("Index", "Poule")">
+                <label for="pouleRaceIdSelector" class="visually-hidden">Kies een Grand Prix</label>
+                <select id="pouleRaceIdSelector" name="raceId" class="form-select bg-dark text-white border-secondary w-auto d-inline-block shadow-sm" onchange="this.form.submit()">
+                    @if (Model?.VolledigeKalender != null)
+                    {
+                        foreach (var item in Model.VolledigeKalender)
+                        {
+                            <option value="@item.RaceID" selected="@(item.RaceID == Model.SelectedRaceId)">@item.Racenaam</option>
+                        }
+                    }
+                </select>
+            </form>
+        </div>
+
+        <hr class="border-danger mx-auto opacity-100 mt-4" style="width: 50px; border-width: 3px;">
+    </div>
+
+    <div class="mx-auto" style="max-width: 850px;">
+
+        @if (eersten.Any() || tweeden.Any() || derden.Any())
+        {
+            <div class="row g-2 justify-content-center mb-5 align-items-end">
+                <div class="col-4">
+                    <div class="card bg-dark text-center p-3" style="border: 1px solid #6c757d; border-radius: 8px;">
+                        <div class="mb-2 mt-2">
+                            <div class="position-relative d-inline-block">
+                                <i class="bi bi-trophy-fill" style="font-size: 3rem; color: #6c757d;"></i>
+                                <span class="position-absolute top-50 start-50 translate-middle fw-bold text-dark" style="font-size: 1.2rem; margin-top: -6px;">2</span>
+                            </div>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill mb-3 mx-auto" style="font-size: 0.75rem;">@(tweeden.FirstOrDefault()?.TotalePunten ?? 0) ptn</span>
+                        @foreach (var p in tweeden)
+                        {
+                            <div class="fw-bold text-white text-truncate fs-6">@p.Username</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card bg-dark text-center p-3" style="border: 1px solid #ffc107; border-top: 3px solid #dc3545; border-radius: 8px;">
+                        <div class="mb-2 mt-2">
+                            <div class="position-relative d-inline-block">
+                                <i class="bi bi-trophy-fill" style="font-size: 4rem; color: #ffc107;"></i>
+                                <span class="position-absolute top-50 start-50 translate-middle fw-bold text-dark" style="font-size: 1.6rem; margin-top: -6px;">1</span>
+                            </div>
+                        </div>
+                        <span class="badge bg-warning text-dark rounded-pill mb-3 mx-auto" style="font-size: 0.85rem;">@(eersten.FirstOrDefault()?.TotalePunten ?? 0) ptn</span>
+                        @foreach (var p in eersten)
+                        {
+                            <div class="fw-bold text-white text-truncate fs-5">@p.Username</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card bg-dark text-center p-3" style="border: 1px solid #cd7f32; border-radius: 8px;">
+                        <div class="mb-2 mt-2">
+                            <div class="position-relative d-inline-block">
+                                <i class="bi bi-trophy-fill" style="font-size: 3rem; color: #cd7f32;"></i>
+                                <span class="position-absolute top-50 start-50 translate-middle fw-bold text-dark" style="font-size: 1.2rem; margin-top: -6px;">3</span>
+                            </div>
+                        </div>
+                        <span class="badge text-white rounded-pill mb-3 mx-auto" style="background-color: #d35400; font-size: 0.75rem;">@(derden.FirstOrDefault()?.TotalePunten ?? 0) ptn</span>
+                        @foreach (var p in derden)
+                        {
+                            <div class="fw-bold text-white text-truncate fs-6">@p.Username</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="table-responsive overflow-hidden">
+            <table class="table table-dark table-borderless align-middle mb-0" style="border-top: 1px solid #495057;">
+                <thead class="border-bottom border-secondary">
+                    <tr class="text-white fw-bold small">
+                        <th style="width: 50px;">Pos</th>
+                        <th style="width: 50px;"></th>
+                        <th>Deelnemer</th>
+                        <th class="text-end">Totaal Punten</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (veiligeRanglijst.Any())
+                    {
+                        foreach (var speler in veiligeRanglijst)
+                        {
+                            <tr class="border-bottom border-secondary" style="height: 70px;">
+                                <td class="text-center">
+                                    @if (speler.Positie == 1)
+                                    {
+                                        <span class="d-inline-flex justify-content-center align-items-center rounded-circle bg-warning text-dark fw-bold" style="width: 32px; height: 32px;">1</span>
+                                    }
+                                    else if (speler.Positie == 2)
+                                    {
+                                        <span class="d-inline-flex justify-content-center align-items-center rounded-circle bg-secondary text-white fw-bold" style="width: 32px; height: 32px;">2</span>
+                                    }
+                                    else if (speler.Positie == 3)
+                                    {
+                                        <span class="d-inline-flex justify-content-center align-items-center rounded-circle text-white fw-bold" style="width: 32px; height: 32px; background-color: #cd7f32;">3</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="fw-bold text-white">@speler.Positie</span>
+                                    }
+                                </td>
+
+                                <td class="text-center">
+                                    @if (speler.VerschilVorigGPWeekend > 0)
+                                    {
+                                        <span class="text-success small fw-bold"><i class="bi bi-caret-up-fill"></i> @speler.VerschilVorigGPWeekend</span>
+                                    }
+                                    else if (speler.VerschilVorigGPWeekend < 0)
+                                    {
+                                        <span class="text-danger small fw-bold"><i class="bi bi-caret-down-fill"></i> @Math.Abs(speler.VerschilVorigGPWeekend)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">—</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-person-circle fs-4 me-3 text-secondary opacity-75"></i>
+                                        <span class="fw-bold text-white fs-6 username-truncate">@speler.Username</span>
+                                    </div>
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="d-flex align-items-center justify-content-end">
+
+                                        @if (speler.AantalChampagneFlessen > 0)
+                                        {
+                                            <div class="position-relative me-4">
+                                                <img src="~/images/champagne.png" alt="Champagne" style="height: 38px; width: auto;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3233/3233306.png'" />
+                                                <span class="position-absolute bottom-0 start-50 translate-middle-x badge rounded-circle text-dark border border-dark p-1" style="background-color: #fce883; font-size: 0.65rem; margin-bottom: -4px;">@speler.AantalChampagneFlessen</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="me-4" style="width: 20px;"></div>
+                                        }
+
+                                        <div class="text-danger fw-bold fs-5 me-1">@speler.TotalePunten</div>
+                                        <div class="text-secondary small me-3">ptn</div>
+
+                                        @if (speler.PuntenGeselecteerdeGP > 0)
+                                        {
+                                            <div class="text-success fw-bold">(+@speler.PuntenGeselecteerdeGP)</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="text-success fw-bold">(+0)</div>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-white opacity-75 fw-bold">
+                                <i class="bi bi-info-circle text-danger me-2 fs-5"></i> Er is momenteel geen tussenstand beschikbaar.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>

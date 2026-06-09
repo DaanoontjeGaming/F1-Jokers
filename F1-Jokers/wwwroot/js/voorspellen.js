@@ -1,0 +1,314 @@
+﻿// --- 1. Drag & Drop Logica ---
+function allowDrop(ev) { ev.preventDefault(); }
+
+function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+
+function drop(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    if (!data) return;
+
+    const draggedElement = document.getElementById(data);
+    const target = ev.target;
+    const dropZone = target.closest(".drop-target");
+    const pool = target.closest(".driver-list");
+
+    if (!draggedElement) return;
+
+    if (pool && data.startsWith("clone-")) {
+        const originalId = data.replace("clone-", "").split("-target")[0];
+        const originalElement = document.getElementById(originalId);
+        if (originalElement) originalElement.classList.remove("hide-section");
+
+        const parentZone = draggedElement.parentNode;
+        parentZone.innerHTML = "...";
+        draggedElement.remove();
+        return;
+    }
+
+    if (dropZone) {
+        if (dropZone.children.length > 0 && dropZone.innerText !== "...") {
+            const existingClone = dropZone.children[0];
+            if (existingClone && existingClone.id && existingClone.id.startsWith("clone-")) {
+                const existingOriginalId = existingClone.id.replace("clone-", "").split("-target")[0];
+                const existingOriginal = document.getElementById(existingOriginalId);
+                if (existingOriginal) existingOriginal.classList.remove("hide-section");
+            }
+        }
+
+        if (data.startsWith("clone-")) {
+            dropZone.innerHTML = "";
+            dropZone.appendChild(draggedElement);
+        } else {
+            const clone = draggedElement.cloneNode(true);
+            clone.id = "clone-" + data + "-target-" + dropZone.id;
+            clone.setAttribute("ondragstart", "drag(event)");
+
+            const originalDataId = draggedElement.getAttribute('data-id');
+            if (originalDataId) {
+                clone.setAttribute('data-id', originalDataId);
+            }
+
+            dropZone.innerHTML = "";
+            dropZone.appendChild(clone);
+            draggedElement.classList.add("hide-section");
+        }
+    }
+}
+
+// --- 2. Tabblad Navigatie (Rode Knoppen) ---
+function switchView(tabId) {
+    document.querySelectorAll(".race-section").forEach(s => s.classList.add("hide-section"));
+    const activeSection = document.getElementById(tabId);
+    if (activeSection) activeSection.classList.remove("hide-section");
+
+    document.querySelectorAll(".race-pool").forEach(p => p.classList.add("hide-section"));
+    if (tabId === "main-race") {
+        const poolMain = document.getElementById("pool-main");
+        if (poolMain) poolMain.classList.remove("hide-section");
+    } else if (tabId === "sprint-race") {
+        const poolSprint = document.getElementById("pool-sprint");
+        if (poolSprint) poolSprint.classList.remove("hide-section");
+    } else if (tabId === "season-drivers") {
+        const poolSDrivers = document.getElementById("pool-season-drivers");
+        if (poolSDrivers) poolSDrivers.classList.remove("hide-section");
+    } else if (tabId === "season-teams") {
+        const poolSTeams = document.getElementById("pool-season-teams");
+        if (poolSTeams) poolSTeams.classList.remove("hide-section");
+    }
+
+    document.querySelectorAll(".btn-tab").forEach(b => b.classList.remove("active"));
+    const activeBtn = document.querySelector(`button[onclick="switchView('${tabId}')"]`);
+    if (activeBtn) activeBtn.classList.add("active");
+}
+
+// --- 3. Toegankelijkheidsmodus (Blauwe Knop) ---
+function toggleAccessibilityMode() {
+    const container = document.getElementById('voorspel-container');
+    if (!container) return;
+
+    container.classList.toggle('force-accessible');
+    const btn = document.getElementById('btn-toggle-ui');
+
+    if (btn) {
+        if (container.classList.contains('force-accessible')) {
+            btn.innerHTML = '<i class="bi bi-mouse"></i> Wissel naar Drag & Drop';
+            btn.classList.remove('btn-info');
+            btn.classList.add('btn-warning');
+        } else {
+            btn.innerHTML = '<i class="bi bi-universal-access"></i> Wissel naar Toegankelijk Voorspellen (Dropdowns)';
+            btn.classList.remove('btn-warning');
+            btn.classList.add('btn-info');
+        }
+    }
+}
+
+// --- 4. Data Verzamelen voor Opslag ---
+function getValuesFromSlots(desktopPrefix, count, mobilePrefix) {
+    let result = [];
+
+    let targetClass = '';
+    if (mobilePrefix === 'mobile-race-pos') {
+        targetClass = 'mobile-select-main';
+    } else if (mobilePrefix === 'mobile-sprint-pos') {
+        targetClass = 'mobile-select-sprint';
+    } else if (mobilePrefix === 'mobile-sdriver-pos') {
+        targetClass = 'mobile-select-sdrivers';
+    } else if (mobilePrefix === 'mobile-steam-pos') {
+        targetClass = 'mobile-select-steams';
+    }
+
+    const selects = document.querySelectorAll(`select.${targetClass}`);
+    let foundMobileValues = false;
+    selects.forEach((select) => {
+
+        const value = select.value ? select.value.trim() : "";
+        if (value !== "") foundMobileValues = true;
+        result.push(value);
+    });
+
+    const container = document.getElementById('voorspel-container');
+    const isAccessibleMode = container && container.classList.contains('force-accessible');
+    const isMobileView = window.innerWidth < 768;
+
+    if (!isAccessibleMode && !isMobileView) {
+        result = [];
+        const allDropTargets = document.querySelectorAll('div.drop-target');
+        const relevantDropTargets = [];
+
+        allDropTargets.forEach(dropZone => {
+            if (dropZone.id && dropZone.id.startsWith(desktopPrefix)) {
+                relevantDropTargets.push(dropZone);
+            }
+        });
+
+        relevantDropTargets.sort((a, b) => {
+            const numA = parseInt(a.id.replace(desktopPrefix, '')) || 0;
+            const numB = parseInt(b.id.replace(desktopPrefix, '')) || 0;
+            return numA - numB;
+        });
+
+        relevantDropTargets.forEach((dropZone) => {
+            let startnr = "";
+            if (dropZone.children.length > 0) {
+                const card = dropZone.children[0];
+                if (card.tagName === 'LI' && card.classList &&
+                    (card.classList.contains('driver-card') || card.classList.contains('team-card'))) {
+
+                    if (card.hasAttribute('data-id')) {
+                        startnr = card.getAttribute('data-id');
+                    } else if (card.id && card.id.includes('-c-')) {
+                        const match = card.id.match(/-c-(\d+)/);
+                        if (match && match[1]) {
+                            startnr = match[1];
+                        }
+                    } else {
+                        const numberSpan = card.querySelector('.dr-number');
+                        if (numberSpan && numberSpan.innerText) {
+                            startnr = numberSpan.innerText.trim();
+                        }
+                    }
+                }
+            }
+            result.push(startnr);
+        });
+
+        while (result.length < count) {
+            result.push("");
+        }
+    }
+
+    return result.join(",");
+}
+
+// --- 5. Voorspelling Versturen naar Server ---
+async function verstuurVoorspelling() {
+    const raceSelector = document.querySelector('select[name="raceId"]');
+    if (!raceSelector) {
+        alert("Let op: Race dropdown bovenaan de pagina ontbreekt in je code.");
+        return;
+    }
+
+    const data = {
+        RaceId: raceSelector.value,
+        RaceTop10: getValuesFromSlots("race-pos", 10, "mobile-race-pos"),
+        SprintTop5: getValuesFromSlots("sprint-pos", 5, "mobile-sprint-pos"),
+        SeizoenCoureursTop10: getValuesFromSlots("sdriver-pos", 22, "mobile-sdriver-pos"),
+        SeizoenTeamsTop11: getValuesFromSlots("steam-pos", 11, "mobile-steam-pos"),
+        PolePositionStartnr: document.getElementById("bonus-pole")?.value || null,
+        SnelsteRondeStartnr: document.getElementById("bonus-fastest")?.value || null,
+        SprintPoleStartnr: document.getElementById("bonus-sprint-pole")?.value || null,
+        MeesteRaceWinstStartnr: document.getElementById("season-most-wins")?.value || null,
+        MeesteSprintWinstStartnr: document.getElementById("season-most-sprint-wins")?.value || null,
+        MeesteRacePolesStartnr: document.getElementById("season-most-poles")?.value || null,
+        MeesteSprintPolesStartnr: document.getElementById("season-most-sprint-poles")?.value || null
+    };
+
+    // --- START VALIDATIE LOGICA ---
+    let isIncompleet = false;
+    let foutMelding = "Niet alle voorspellingen zijn ingevuld. Vul de volgende onderdelen nog volledig in:\n\n";
+
+    // Valideer de race-specifieke voorspellingen (als de race nog open is)
+    if (!window.isRaceLocked) {
+        if (data.RaceTop10.split(',').includes("")) {
+            isIncompleet = true;
+            foutMelding += "➡️ Top 10 (Hoofdrace)\n";
+        }
+        if (!data.PolePositionStartnr) { isIncompleet = true; foutMelding += "➡️ Pole Position (Hoofdrace)\n"; }
+        if (!data.SnelsteRondeStartnr) { isIncompleet = true; foutMelding += "➡️ Snelste Ronde (Hoofdrace)\n"; }
+
+        // Controleer of de sprintrace tab bestaat in de HTML voor dit weekend
+        if (document.getElementById('sprint-race')) {
+            if (data.SprintTop5.split(',').includes("")) {
+                isIncompleet = true;
+                foutMelding += "➡️ Top 5 (Sprintrace)\n";
+            }
+            if (!data.SprintPoleStartnr) { isIncompleet = true; foutMelding += "➡️ Sprint Pole\n"; }
+        }
+    }
+
+    // Valideer de seizoensvoorspellingen (als het seizoen nog open is)
+    if (!window.isSeasonLocked && document.getElementById('season-drivers')) {
+        if (data.SeizoenCoureursTop10.split(',').includes("")) {
+            isIncompleet = true;
+            foutMelding += "➡️ Eindstand Coureurs (Alle 22 posities)\n";
+        }
+        if (data.SeizoenTeamsTop11.split(',').includes("")) {
+            isIncompleet = true;
+            foutMelding += "➡️ Eindstand Teams (Alle 11 posities)\n";
+        }
+        if (!data.MeesteRaceWinstStartnr) { isIncompleet = true; foutMelding += "➡️ Meeste Race Overwinningen\n"; }
+        if (!data.MeesteSprintWinstStartnr) { isIncompleet = true; foutMelding += "➡️ Meeste Sprint Overwinningen\n"; }
+        if (!data.MeesteRacePolesStartnr) { isIncompleet = true; foutMelding += "➡️ Meeste Race Poles\n"; }
+        if (!data.MeesteSprintPolesStartnr) { isIncompleet = true; foutMelding += "➡️ Meeste Sprint Poles\n"; }
+    }
+
+    // Blokkeer de fetch als er iets mist
+    if (isIncompleet) {
+        alert(foutMelding);
+        return; // Breekt de functie af, er wordt niets naar de server gestuurd
+    }
+    // --- EINDE VALIDATIE LOGICA ---
+
+    try {
+        const response = await fetch("/Voorspelling/Opslaan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const serverResultaat = await response.json();
+
+        if (response.ok) {
+            alert(serverResultaat.message || "Je voorspelling is succesvol opgeslagen!");
+            location.reload();
+        } else {
+            alert("Fout van server: " + serverResultaat.message);
+        }
+    } catch (error) {
+        console.error("Fout bij verzenden naar de server:", error);
+        alert("Er ging iets mis met de verbinding naar de server.");
+    }
+}
+
+// --- 6. Voorkom Dubbele Coureurs in Dropdowns ---
+document.addEventListener('DOMContentLoaded', function () {
+    function blockDuplicateSelections(dropdownClass) {
+        const selects = document.querySelectorAll(`select.${dropdownClass}`);
+        if (!selects || selects.length === 0) return;
+
+        function updateDropdowns() {
+            const geselecteerdeWaardes = Array.from(selects)
+                .map(s => s.value)
+                .filter(val => val && val.trim() !== "");
+
+            selects.forEach(select => {
+                const huidigeWaarde = select.value;
+                const opties = select.querySelectorAll('option');
+
+                opties.forEach(optie => {
+                    if (optie.value === "") return;
+
+                    if (geselecteerdeWaardes.includes(optie.value) && optie.value !== huidigeWaarde) {
+                        optie.disabled = true;
+                        optie.style.display = 'none';
+                    } else {
+                        optie.disabled = false;
+                        optie.style.display = '';
+                    }
+                });
+            });
+        }
+
+        selects.forEach(select => {
+            select.addEventListener('change', updateDropdowns);
+        });
+
+        updateDropdowns();
+    }
+
+    blockDuplicateSelections('mobile-select-main');
+    blockDuplicateSelections('mobile-select-sprint');
+    blockDuplicateSelections('mobile-select-sdrivers');
+    blockDuplicateSelections('mobile-select-steams');
+});

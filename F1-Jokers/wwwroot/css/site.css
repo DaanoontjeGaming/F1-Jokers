@@ -1,0 +1,342 @@
+:root {
+    --f1-red: #e10600;
+    --f1-black: #15151e;
+    --f1-dark-grey: #1f1f27;
+    --f1-white: #ffffff;
+    --f1-border: #38383f;
+    --f1-slot-bg: #2b2b35;
+    --f1-blue: #0042bb;
+    --f1-orange: #ff8700;
+}
+
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    background-color: var(--f1-black);
+    color: var(--f1-white);
+    font-family: 'Titillium Web', sans-serif;
+    margin: 0;
+}
+
+html body.high-contrast.high-contrast {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+    html body.high-contrast.high-contrast section.column,
+    html body.high-contrast.high-contrast li.driver-card,
+    html body.high-contrast.high-contrast div.race-banner,
+    html body.high-contrast.high-contrast div.drop-target,
+    html body.high-contrast.high-contrast select.form-select,
+    html body.high-contrast.high-contrast li.team-card,
+    html body.high-contrast.high-contrast div.bonus-section {
+        background-color: #000000;
+        border: 3px solid #ffff00;
+        color: #ffffff;
+    }
+
+    html body.high-contrast.high-contrast span.text-danger,
+    html body.high-contrast.high-contrast div.text-danger,
+    html body.high-contrast.high-contrast label.text-danger,
+    html body.high-contrast.high-contrast .dr-number,
+    html body.high-contrast.high-contrast span.pos-num,
+    html body.high-contrast.high-contrast h2.column-title,
+    html body.high-contrast.high-contrast h3.column-title {
+        color: #ffff00;
+        background-color: #000000;
+        border-color: #ffff00;
+    }
+
+    html body.high-contrast.high-contrast button.btn-danger,
+    html body.high-contrast.high-contrast a.btn-danger,
+    html body.high-contrast.high-contrast button.btn-tab.active {
+        background-color: #ffff00;
+        color: #000000;
+        border: 3px solid #ffffff;
+        font-weight: 900;
+    }
+
+#voorspel-container.force-accessible .desktop-only {
+    display: none;
+    visibility: hidden;
+    position: absolute;
+}
+
+#voorspel-container.force-accessible .mobile-only {
+    display: block;
+    visibility: visible;
+    position: static;
+}
+
+.scrollable-pool {
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 5px;
+    border: 1px solid var(--f1-border);
+    border-radius: 4px;
+    background: rgba(0,0,0,0.2);
+}
+
+    .scrollable-pool::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .scrollable-pool::-webkit-scrollbar-track {
+        background: var(--f1-dark-grey);
+    }
+
+    .scrollable-pool::-webkit-scrollbar-thumb {
+        background: var(--f1-red);
+        border-radius: 4px;
+    }
+
+.scrollable-results {
+    max-height: 490px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+    .scrollable-results::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .scrollable-results::-webkit-scrollbar-track {
+        background: var(--f1-dark-grey);
+    }
+
+    .scrollable-results::-webkit-scrollbar-thumb {
+        background: var(--f1-red);
+        border-radius: 3px;
+    }
+
+.app-logo {
+    height: 35px;
+    width: auto;
+    transition: all 0.2s;
+}
+
+.header-nav-wrapper {
+    z-index: 1040;
+}
+
+.nav-item {
+    opacity: 0.8;
+    transition: color 0.2s, opacity 0.2s;
+}
+
+html body .main-navigation .nav-item:hover,
+html body .main-navigation .nav-item.active {
+    opacity: 1;
+    color: var(--f1-red);
+}
+
+.nav-text {
+    font-size: 0.95rem;
+    text-transform: uppercase;
+}
+
+html body .hide-section {
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.column {
+    background-color: var(--f1-dark-grey);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--f1-border);
+}
+
+.column-title {
+    text-transform: uppercase;
+    font-weight: 800;
+    border-bottom: 2px solid var(--f1-red);
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.btn-tab {
+    background-color: var(--f1-dark-grey);
+    color: var(--f1-white);
+    border: 1px solid var(--f1-border);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+    .btn-tab.active {
+        background-color: var(--f1-red);
+        border-color: var(--f1-red);
+    }
+
+.driver-card, .team-card {
+    background-color: var(--f1-black);
+    border: 1px solid var(--f1-border);
+    border-left: 4px solid var(--f1-red);
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: grab;
+}
+
+.pos-num {
+    background: var(--f1-red);
+    color: white;
+    width: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.drop-target {
+    flex-grow: 1;
+    background-color: var(--f1-slot-bg);
+    border: 1px dashed #555;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+}
+
+    .drop-target .driver-card, .drop-target .team-card {
+        border: none;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+@media (min-width: 768px) {
+    .app-logo {
+        height: 45px;
+    }
+
+    html body .mobile-only,
+    #voorspel-container .mobile-only {
+        display: none;
+        visibility: hidden;
+        position: absolute;
+    }
+
+    html body .desktop-only,
+    #voorspel-container .desktop-only {
+        display: block;
+        visibility: visible;
+        position: static;
+    }
+
+    html body .prediction-container.responsive-layout {
+        flex-direction: row;
+    }
+}
+
+@media (max-width: 767.98px) {
+    body {
+        padding-bottom: 80px;
+    }
+
+    html body .desktop-only,
+    #voorspel-container .desktop-only {
+        display: none;
+        visibility: hidden;
+        position: absolute;
+    }
+
+    html body .mobile-only,
+    #voorspel-container .mobile-only {
+        display: block;
+        visibility: visible;
+        position: static;
+    }
+
+    html body .prediction-container.responsive-layout {
+        flex-direction: column;
+    }
+
+    .main-navigation {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--f1-black);
+        border-top: 2px solid var(--f1-border);
+        z-index: 1050;
+        padding: 10px 0 5px 0;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    html body header .nav-container,
+    html body .main-navigation .nav-container {
+        justify-content: space-around;
+        display: flex;
+        width: 100%;
+    }
+
+    .nav-item i {
+        display: block;
+        margin-right: 0;
+        margin-bottom: 2px;
+        font-size: 1.4rem;
+    }
+
+    .nav-text {
+        display: block;
+        font-size: 0.65rem;
+    }
+
+    footer {
+        margin-bottom: 70px;
+    }
+}
+
+footer {
+    padding: 20px 0;
+    text-align: center;
+    color: var(--f1-white);
+    background-color: var(--f1-black);
+    border-top: 1px solid var(--f1-border);
+}
+
+/* =========================================
+   POULE RANGLIJST MOBIELE FIX
+   ========================================= */
+@media (max-width: 575.98px) {
+    /* Maak de padding kleiner en de tekst een fractie kleiner */
+    .poule-table th,
+    .poule-table td {
+        padding: 0.5rem 0.25rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Voorkom dat de (+X) punten en de trofee te groot zijn op mobiel */
+    .poule-table .fs-5 {
+        font-size: 1rem !important;
+    }
+
+    .poule-table .fs-4 {
+        font-size: 1.1rem !important;
+    }
+
+    /* Breek lange gebruikersnamen netjes af om oprekken te voorkomen */
+    .username-truncate {
+        max-width: 95px; /* Perfect voor Galaxy S20 formaat */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: middle;
+    }
+}
