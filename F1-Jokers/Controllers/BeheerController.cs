@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using F1Jokers.Services;
 using F1Jokers.Data;
+using F1Jokers.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace F1Jokers.Controllers
@@ -25,7 +27,6 @@ namespace F1Jokers.Controllers
 
         public IActionResult Index()
         {
-            // Sprint races ("S") en het hele seizoen overslaan voor de standaard dropdown
             var kalender = _context.Kalender
                 .Where(k => !k.RaceID.StartsWith("Seizoen") && !k.RaceID.EndsWith("S"))
                 .OrderBy(k => k.Deadline)
@@ -127,10 +128,7 @@ namespace F1Jokers.Controllers
 
             var csv = new System.Text.StringBuilder();
 
-            // MAGIC FIX: Forceert Excel om in kolommen te denken onafhankelijk van taalinstellingen
             csv.AppendLine("sep=;");
-
-            // Headers
             csv.AppendLine("Username;Totale Punten;Race ID;Racenaam;Type Voorspelling;Voorspeld StartNr;Voorspeld TeamID;Werkelijke Uitslag StartNr;Werkelijke Uitslag TeamID;Behaalde Punten op Voorspelling");
 
             foreach (var v in voorspellingen)
@@ -164,16 +162,13 @@ namespace F1Jokers.Controllers
         {
             try
             {
-                // 1. Verwijder afhankelijke data eerst (kinderen) om Foreign Key errors te voorkomen
                 _context.Voorspellingen.RemoveRange(_context.Voorspellingen);
                 _context.Uitslagen.RemoveRange(_context.Uitslagen);
 
-                // 2. Verwijder daarna de onafhankelijke data (ouders)
                 _context.Kalender.RemoveRange(_context.Kalender);
                 _context.WKStandCoureurs.RemoveRange(_context.WKStandCoureurs);
                 _context.WKStandTeams.RemoveRange(_context.WKStandTeams);
 
-                // 3. Haal alle gebruikers op en reset de scores en flessen naar 0
                 var gebruikers = await _context.Gebruikers.ToListAsync();
                 foreach (var gebruiker in gebruikers)
                 {
@@ -181,7 +176,6 @@ namespace F1Jokers.Controllers
                     gebruiker.Champagne = 0;
                 }
 
-                // 4. Voer de destructieve query in één keer uit op de database
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Het nieuwe seizoen is succesvol geïnitieerd! Alle data is gewist en de standen staan op 0.";
@@ -192,6 +186,41 @@ namespace F1Jokers.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PuntenInstellingen()
+        {
+            var parameters = await _context.PuntenParameters
+                .OrderBy(p => p.PuntenID)
+                .ToListAsync();
+
+            return View(parameters);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OpslaanPuntenInstellingen(List<PuntenParameter> parameters)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.PuntenParameters.UpdateRange(parameters);
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "De puntentelling is succesvol bijgewerkt!";
+                    return RedirectToAction("Index");
+                }
+                catch (System.Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Fout bij het opslaan van de punten: {ex.Message}";
+                    return RedirectToAction("Index");
+                }
+            }
+
+            TempData["ErrorMessage"] = "De ingevulde gegevens zijn ongeldig.";
+            return View("PuntenInstellingen", parameters);
         }
     }
 }

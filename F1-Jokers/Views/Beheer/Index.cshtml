@@ -30,7 +30,23 @@
     }
 
     <div class="row g-4">
-        <!-- Kaart 1: Uitslagen Verwerken -->
+
+        <div class="col-md-12 mb-2">
+            <div class="card bg-dark border-secondary shadow-sm">
+                <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                    <i class="bi bi-sliders text-danger me-2"></i> Puntentelling & Reglementen
+                </div>
+                <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap">
+                    <p class="text-light opacity-75 small mb-0 w-75">
+                        Beheer het hart van de applicatie. Wijzig hoeveel punten een gebruiker krijgt voor een perfecte pole position, een snelste ronde of het correct voorspellen van de eindstand.
+                    </p>
+                    <a asp-controller="Beheer" asp-action="PuntenInstellingen" class="btn btn-outline-light fw-bold px-4 mt-3 mt-md-0">
+                        <i class="bi bi-pencil-square me-1"></i> Configuratie Openen
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <div class="col-md-6">
             <div class="card bg-dark border-secondary h-100 shadow-sm">
                 <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
@@ -62,7 +78,6 @@
             </div>
         </div>
 
-        <!-- Kaart 2: Systeemonderhoud -->
         <div class="col-md-6">
             <div class="card bg-dark border-secondary h-100 shadow-sm">
                 <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
@@ -80,14 +95,13 @@
         </div>
     </div>
 
-    <!-- Kaart 3: Seizoensafsluiting -->
     <div class="card bg-dark border-secondary mt-4 shadow-sm">
         <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
             <i class="bi bi-star-fill text-danger me-2"></i> Seizoensafsluiting &amp; Bonuspunten
         </div>
         <div class="card-body p-4">
             <p class="text-light opacity-75 small mb-4">
-                Vergelijk de langetermijn-seizoensvoorspellingen (Eindstand Coureurs, Eindstand Teams en alle overige winnaars-bonusvragen) met de ingevoerde officiële einduitslag. Elke correcte voorspelling levert de deelnemer 25 punten op.
+                Vergelijk de langetermijn-seizoensvoorspellingen met de ingevoerde officiële einduitslag. Elke correcte voorspelling levert de deelnemer 25 punten op.
                 <strong>Let op: dit wordt berekend voor het huidige seizoen (@DateTime.Now.Year).</strong>
             </p>
 
@@ -96,7 +110,7 @@
                 <input type="hidden" name="seizoenId" value="Seizoen@DateTime.Now.Year" />
 
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-danger fw-bold text-white px-4" onclick="return confirm('Weet je zeker dat je de seizoens-bonuspunten voor @DateTime.Now.Year definitief wilt berekenen? Dit overschrijft de huidige ranglijst-scores.');">
+                    <button type="submit" class="btn btn-danger fw-bold text-white px-4" onclick="return confirm('Weet je zeker dat je de seizoens-bonuspunten voor @DateTime.Now.Year definitief wilt berekenen?');">
                         <i class="bi bi-calculator me-1"></i> Bereken Seizoensbonus @DateTime.Now.Year
                     </button>
                 </div>
@@ -104,7 +118,6 @@
         </div>
     </div>
 
-    <!-- Kaart 4: UC09 - Data Export -->
     <div class="card bg-dark border-secondary mt-4 shadow-sm">
         <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
             <i class="bi bi-file-earmark-spreadsheet-fill text-danger me-2"></i> Ruwe Data Export (CSV)
@@ -120,7 +133,6 @@
         </div>
     </div>
 
-    <!-- Kaart 5: UC10 - Nieuw Seizoen Initiëren (Gevaar Zone) -->
     <div class="card border-danger mt-5 shadow-sm" style="background-color: rgba(255, 24, 1, 0.05);">
         <div class="card-header bg-danger text-white fw-bold text-uppercase">
             <i class="bi bi-exclamation-triangle-fill me-2"></i> Gevaar Zone: Nieuw Seizoen Initiëren

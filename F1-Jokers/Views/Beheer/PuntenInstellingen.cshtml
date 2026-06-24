@@ -1,0 +1,54 @@
+﻿@model List<F1Jokers.Models.PuntenParameter>
+
+@{
+    ViewData["Title"] = "Puntentelling Configureren";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <a asp-action="Index" class="btn btn-outline-secondary text-white border-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Terug naar Controlepaneel
+        </a>
+    </div>
+
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-white fw-bold text-uppercase" style="letter-spacing: 1px;">
+            <i class="bi bi-sliders text-danger me-2"></i> Puntentelling Configureren
+        </h1>
+        <p class="text-light opacity-75">Pas hier de waardes aan voor alle bonuspunten en race-posities.</p>
+    </div>
+
+    <div class="card bg-dark border-secondary shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="OpslaanPuntenInstellingen" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="row g-4">
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-3 border border-secondary rounded" style="background-color: rgba(0,0,0,0.2);">
+                                <input type="hidden" asp-for="@Model[i].PuntenID" />
+                                <input type="hidden" asp-for="@Model[i].Parameter" />
+
+                                <label class="form-label text-white fw-bold">@Model[i].Parameter</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-secondary border-secondary text-white"><i class="bi bi-trophy-fill"></i></span>
+                                    <input asp-for="@Model[i].Waarde" class="form-control bg-dark text-white border-secondary" type="number" required />
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <hr class="border-secondary my-4" />
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-danger fw-bold px-5 py-2 text-uppercase">
+                        <i class="bi bi-save2-fill me-2"></i> Wijzigingen Opslaan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
