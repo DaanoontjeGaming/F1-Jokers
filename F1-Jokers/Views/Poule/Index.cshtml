@@ -51,7 +51,10 @@
                         <span class="badge bg-secondary rounded-pill mb-3 mx-auto" style="font-size: 0.75rem;">@(tweeden.FirstOrDefault()?.TotalePunten ?? 0) ptn</span>
                         @foreach (var p in tweeden)
                         {
-                            <div class="fw-bold text-white text-truncate fs-6">@p.Username</div>
+                            <!-- Aangepast: Voorspelling (enkelvoud) en text-white -->
+                            <a asp-controller="Voorspelling" asp-action="Bekijk" asp-route-raceId="@Model.SelectedRaceId" asp-route-username="@p.Username" class="text-white text-decoration-none">
+                                <div class="fw-bold text-truncate fs-6" style="cursor: pointer;">@p.Username</div>
+                            </a>
                         }
                     </div>
                 </div>
@@ -67,7 +70,10 @@
                         <span class="badge bg-warning text-dark rounded-pill mb-3 mx-auto" style="font-size: 0.85rem;">@(eersten.FirstOrDefault()?.TotalePunten ?? 0) ptn</span>
                         @foreach (var p in eersten)
                         {
-                            <div class="fw-bold text-white text-truncate fs-5">@p.Username</div>
+                            <!-- Aangepast: Voorspelling (enkelvoud) en text-white -->
+                            <a asp-controller="Voorspelling" asp-action="Bekijk" asp-route-raceId="@Model.SelectedRaceId" asp-route-username="@p.Username" class="text-white text-decoration-none">
+                                <div class="fw-bold text-truncate fs-5" style="cursor: pointer;">@p.Username</div>
+                            </a>
                         }
                     </div>
                 </div>
@@ -83,7 +89,10 @@
                         <span class="badge text-white rounded-pill mb-3 mx-auto" style="background-color: #d35400; font-size: 0.75rem;">@(derden.FirstOrDefault()?.TotalePunten ?? 0) ptn</span>
                         @foreach (var p in derden)
                         {
-                            <div class="fw-bold text-white text-truncate fs-6">@p.Username</div>
+                            <!-- Aangepast: Voorspelling (enkelvoud) en text-white -->
+                            <a asp-controller="Voorspelling" asp-action="Bekijk" asp-route-raceId="@Model.SelectedRaceId" asp-route-username="@p.Username" class="text-white text-decoration-none">
+                                <div class="fw-bold text-truncate fs-6" style="cursor: pointer;">@p.Username</div>
+                            </a>
                         }
                     </div>
                 </div>
@@ -143,7 +152,10 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <i class="bi bi-person-circle fs-4 me-3 text-secondary opacity-75"></i>
-                                        <span class="fw-bold text-white fs-6 username-truncate">@speler.Username</span>
+                                        <!-- Aangepast: Voorspelling (enkelvoud) en text-white -->
+                                        <a asp-controller="Voorspelling" asp-action="Bekijk" asp-route-raceId="@Model?.SelectedRaceId" asp-route-username="@speler.Username" class="text-white text-decoration-none fw-bold fs-6 username-truncate" style="cursor: pointer;">
+                                            @speler.Username
+                                        </a>
                                     </div>
                                 </td>
 
