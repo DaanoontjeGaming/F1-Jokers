@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using F1Jokers.Data;
 using System;
+using System.Threading.Tasks;
 
 namespace F1Jokers.Controllers
 {
@@ -102,7 +103,6 @@ namespace F1Jokers.Controllers
 
             List<Voorspelling> nieuweLijst = new List<Voorspelling>();
 
-            // --- VERNIEUWDE VOEGTOE METHODE ---
             void VoegToe(string rId, string type, int? nr)
             {
                 if (nr.HasValue && nr.Value > 0)
@@ -174,6 +174,87 @@ namespace F1Jokers.Controllers
             _context.SaveChanges();
 
             return Ok(new { message = "Je voorspelling is succesvol bijgewerkt!" });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Bekijk(string raceId, string username)
+        {
+            var race = await _context.Kalender.FirstOrDefaultAsync(k => k.RaceID == raceId);
+            var deelnemer = await _context.Gebruikers.FirstOrDefaultAsync(g => g.Username == username);
+
+            if (race == null || deelnemer == null)
+            {
+                return NotFound("Race of Gebruiker niet gevonden.");
+            }
+
+            string sprintId = raceId + "S";
+            var sprintRace = await _context.Kalender.FirstOrDefaultAsync(k => k.RaceID == sprintId);
+
+            string seizoenId = "Seizoen" + DateTime.Now.Year.ToString();
+            var seizoenRace = await _context.Kalender.FirstOrDefaultAsync(k => k.RaceID == seizoenId);
+
+            ViewBag.AlleRaces = await _context.Kalender
+                .Where(k => !k.RaceID.StartsWith("Seizoen") && !k.RaceID.EndsWith("S"))
+                .OrderBy(k => k.Datum)
+                .ToListAsync();
+
+            // NIEUW: We halen nu specifiek ook de sprint en seizoensvoorspellingen mee!
+            var voorspellingen = await _context.Voorspellingen
+                .Where(v => v.GebruikerID == deelnemer.GebruikerID &&
+                           (v.RaceID == raceId || v.RaceID == sprintId || v.RaceID == seizoenId))
+                .ToListAsync();
+
+            ViewBag.Race = race;
+            ViewBag.SprintRace = sprintRace; // Dit bepaalt of het Sprint tabje zichtbaar wordt
+            ViewBag.SeizoenRace = seizoenRace;
+            ViewBag.Deelnemer = deelnemer;
+
+            ViewBag.Coureurs = await _context.Coureurs.Include(c => c.Team).OrderBy(c => c.Achternaam).ToListAsync();
+            ViewBag.Teams = await _context.Teams.OrderBy(t => t.Teamnaam).ToListAsync();
+
+            return View(voorspellingen);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Beheerder")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminBewerk(string raceId, int gebruikerId, List<Voorspelling> aangepasteVoorspellingen)
+        {
+            string redirectUsername = "";
+            try
+            {
+                var deelnemer = await _context.Gebruikers.FirstOrDefaultAsync(g => g.GebruikerID == gebruikerId);
+                if (deelnemer != null)
+                {
+                    redirectUsername = deelnemer.Username;
+                }
+
+                var bestaandeVoorspellingen = await _context.Voorspellingen
+                    .Where(v => v.RaceID == raceId && v.GebruikerID == gebruikerId)
+                    .ToListAsync();
+
+                _context.Voorspellingen.RemoveRange(bestaandeVoorspellingen);
+
+                foreach (var v in aangepasteVoorspellingen)
+                {
+                    v.RaceID = raceId;
+                    v.GebruikerID = gebruikerId;
+
+                    if (v.StartNr == 0) v.StartNr = null;
+                    if (v.TeamId == 0) v.TeamId = null;
+
+                    _context.Voorspellingen.Add(v);
+                }
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"De voorspellingen van de gebruiker zijn succesvol overschreven.";
+            }
+            catch (System.Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Fout bij het opslaan: {ex.Message}";
+            }
+
+            return RedirectToAction("Bekijk", new { raceId = raceId, username = redirectUsername });
         }
     }
 }

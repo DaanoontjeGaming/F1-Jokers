@@ -1,0 +1,378 @@
+﻿@model List<F1Jokers.Models.Voorspelling>
+
+@{
+    ViewData["Title"] = "Voorspelling Inzien";
+    var race = ViewBag.Race as F1Jokers.Models.Kalender;
+    var sprintRace = ViewBag.SprintRace as F1Jokers.Models.Kalender;
+    var seizoenRace = ViewBag.SeizoenRace as F1Jokers.Models.Kalender;
+
+    var deelnemer = ViewBag.Deelnemer as F1Jokers.Models.Gebruiker;
+    var coureurs = ViewBag.Coureurs as List<F1Jokers.Models.Coureur>;
+    var teams = ViewBag.Teams as List<F1Jokers.Models.Team>;
+    var alleRaces = ViewBag.AlleRaces as List<F1Jokers.Models.Kalender>;
+
+    bool isBeheerder = User.IsInRole("Beheerder");
+
+    bool magZienRace = isBeheerder || DateTime.Now > race.Deadline;
+    bool magZienSprint = isBeheerder || (sprintRace != null && DateTime.Now > sprintRace.Deadline);
+    bool magZienSeizoen = isBeheerder || (seizoenRace != null && DateTime.Now > seizoenRace.Deadline);
+
+    // Helpers
+    F1Jokers.Models.Coureur GetCoureur(int? startNr) { return startNr.HasValue ? coureurs.FirstOrDefault(c => c.Startnr == startNr.Value) : null; }
+    F1Jokers.Models.Team GetTeam(int? teamId) { return teamId.HasValue ? teams.FirstOrDefault(t => t.TeamId == teamId.Value) : null; }
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <a asp-controller="Poule" asp-action="Index" class="btn btn-outline-secondary text-white border-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Terug naar Overzicht
+        </a>
+    </div>
+
+    <!-- Dropdown voor Race Selectie -->
+    <div class="text-center mb-4">
+        <form method="get" asp-action="Bekijk" class="d-inline-block">
+            <input type="hidden" name="username" value="@deelnemer.Username" />
+            <select name="raceId" class="form-select bg-dark text-white border-secondary shadow-sm" style="min-width: 250px;" onchange="this.form.submit()">
+                @if (alleRaces != null)
+                {
+                    foreach (var r in alleRaces)
+                    {
+                        <option value="@r.RaceID" selected="@(r.RaceID == race.RaceID)">@r.Racenaam</option>
+                    }
+                }
+            </select>
+        </form>
+    </div>
+
+    <div class="text-center mb-4">
+        <h1 class="display-6 text-white fw-bold text-uppercase" style="letter-spacing: 1px;">
+            Voorspelling van <span class="text-danger">@deelnemer.Username</span>
+        </h1>
+    </div>
+
+    <!-- Navigatie Knoppen (Tabs) -->
+    <ul class="nav nav-pills justify-content-center mb-4 gap-2" id="voorspellingTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active bg-danger text-white rounded-1 fw-bold text-uppercase border border-danger" id="hoofdrace-tab" data-bs-toggle="pill" data-bs-target="#hoofdrace" type="button" role="tab">Hoofdrace</button>
+        </li>
+        @if (sprintRace != null)
+        {
+            <li class="nav-item" role="presentation">
+                <button class="nav-link bg-dark text-white rounded-1 fw-bold text-uppercase border border-secondary" id="sprintrace-tab" data-bs-toggle="pill" data-bs-target="#sprintrace" type="button" role="tab">Sprintrace</button>
+            </li>
+        }
+        <li class="nav-item" role="presentation">
+            <button class="nav-link bg-dark text-white rounded-1 fw-bold text-uppercase border border-secondary" id="seizoen-coureurs-tab" data-bs-toggle="pill" data-bs-target="#seizoen-coureurs" type="button" role="tab">Seizoen Coureurs</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link bg-dark text-white rounded-1 fw-bold text-uppercase border border-secondary" id="seizoen-teams-tab" data-bs-toggle="pill" data-bs-target="#seizoen-teams" type="button" role="tab">Seizoen Teams</button>
+        </li>
+    </ul>
+
+    <!-- Deadline Banner -->
+    <div class="text-center mb-4">
+        <div class="d-inline-block border border-danger rounded-1 px-4 py-2" style="background-color: rgba(220, 53, 69, 0.1);">
+            <span class="text-danger fw-bold"><i class="bi bi-clock-fill me-2"></i> Hoofdrace Deadline: @race.Deadline.ToString("dd MMMM yyyy - HH:mm")</span>
+        </div>
+    </div>
+
+    <!-- Content van de Tabs -->
+    <div class="tab-content" id="voorspellingTabsContent">
+
+        <!-- ================= TAB: HOOFDRACE ================= -->
+        <div class="tab-pane fade show active" id="hoofdrace" role="tabpanel">
+            <div class="mx-auto" style="max-width: 500px;">
+                @if (!magZienRace)
+                {
+                    <div class="alert border-warning text-center fw-bold mb-4" style="background-color: rgba(255, 193, 7, 0.1); color: #ffc107;">
+                        <i class="bi bi-lock-fill me-2"></i> Keuzes voor de hoofdrace zijn nog verborgen.
+                    </div>
+                }
+                <!-- TOP 10 LIJST -->
+                <div class="card bg-dark border-secondary p-3 mb-4 rounded-1">
+                    <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Top 10 (Race)</h5>
+                    @for (int i = 1; i <= 10; i++)
+                    {
+                        var v = Model.FirstOrDefault(x => x.TypeVoorspelling == $"RacePos{i}");
+                        var c = GetCoureur(v?.StartNr);
+
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-danger text-white fw-bold d-flex justify-content-center align-items-center rounded-1" style="width: 40px; height: 40px; min-width: 40px;">@i</div>
+                            <div class="border border-secondary ms-2 flex-grow-1 px-3 py-2 d-flex justify-content-between align-items-center rounded-1" style="background-color: rgba(0,0,0,0.2); height: 40px;">
+                                @if (!magZienRace)
+                                {
+                                    <span class="fst-italic text-white small opacity-75"><i class="bi bi-eye-slash-fill me-1"></i> Hidden</span>
+                                }
+                                else if (c != null)
+                                {
+                                    <div>
+                                        <span class="text-danger fw-bold me-3" style="width: 20px; display: inline-block;">@c.Startnr</span>
+                                        <span class="text-white fw-bold">@c.Voornaam @c.Achternaam</span>
+                                    </div>
+                                    <span class="text-secondary small d-none d-sm-block">@(c.Team?.Teamnaam ?? "Onbekend")</span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted small">-</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- RACE EXTRA -->
+                <div class="card bg-dark border-secondary p-3 rounded-1 mb-5">
+                    <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Race Extra</h5>
+                    @{
+                        var cPole = GetCoureur(Model.FirstOrDefault(x => x.TypeVoorspelling == "RacePole")?.StartNr);
+                        var cFastest = GetCoureur(Model.FirstOrDefault(x => x.TypeVoorspelling == "SnelsteRonde")?.StartNr);
+                    }
+                    <div class="mb-3">
+                        <label class="text-danger fw-bold small mb-1">Pole Position</label>
+                        <div class="border border-secondary p-2 rounded-1 d-flex align-items-center" style="background-color: rgba(0,0,0,0.2);">
+                            @if (!magZienRace)
+                            {
+                                <span class="fst-italic text-white small opacity-75">Hidden</span>
+                            }
+                            else if (cPole != null)
+                            {
+
+                                <span class="text-white">@cPole.Startnr | @cPole.Voornaam @cPole.Achternaam <span class="text-secondary mx-1">|</span> @(cPole.Team?.Teamnaam)</span>
+                            }
+                            else
+                            {
+
+                                <span class="text-muted">-</span>
+                            }
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-danger fw-bold small mb-1">Snelste Ronde</label>
+                        <div class="border border-secondary p-2 rounded-1 d-flex align-items-center" style="background-color: rgba(0,0,0,0.2);">
+                            @if (!magZienRace)
+                            {
+                                <span class="fst-italic text-white small opacity-75">Hidden</span>
+                            }
+                            else if (cFastest != null)
+                            {
+
+                                <span class="text-white">@cFastest.Startnr | @cFastest.Voornaam @cFastest.Achternaam <span class="text-secondary mx-1">|</span> @(cFastest.Team?.Teamnaam)</span>
+                            }
+                            else
+                            {
+
+                                <span class="text-muted">-</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB: SPRINTRACE ================= -->
+        @if (sprintRace != null)
+        {
+            <div class="tab-pane fade" id="sprintrace" role="tabpanel">
+                <div class="mx-auto" style="max-width: 500px;">
+                    @if (!magZienSprint)
+                    {
+                        <div class="alert border-warning text-center fw-bold mb-4" style="background-color: rgba(255, 193, 7, 0.1); color: #ffc107;">
+                            <i class="bi bi-lock-fill me-2"></i> Keuzes voor de sprintrace zijn verborgen tot: @sprintRace.Deadline.ToString("dd MMM - HH:mm")
+                        </div>
+                    }
+                    <div class="card bg-dark border-secondary p-3 mb-4 rounded-1">
+                        <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Top 5 (Sprint)</h5>
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            var v = Model.FirstOrDefault(x => x.TypeVoorspelling == $"SprintPos{i}");
+                            var c = GetCoureur(v?.StartNr);
+
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-danger text-white fw-bold d-flex justify-content-center align-items-center rounded-1" style="width: 40px; height: 40px; min-width: 40px;">@i</div>
+                                <div class="border border-secondary ms-2 flex-grow-1 px-3 py-2 d-flex justify-content-between align-items-center rounded-1" style="background-color: rgba(0,0,0,0.2); height: 40px;">
+                                    @if (!magZienSprint)
+                                    {
+                                        <span class="fst-italic text-white small opacity-75"><i class="bi bi-eye-slash-fill me-1"></i> Hidden</span>
+                                    }
+                                    else if (c != null)
+                                    {
+                                        <div>
+                                            <span class="text-danger fw-bold me-3" style="width: 20px; display: inline-block;">@c.Startnr</span>
+                                            <span class="text-white fw-bold">@c.Voornaam @c.Achternaam</span>
+                                        </div>
+                                        <span class="text-secondary small d-none d-sm-block">@(c.Team?.Teamnaam ?? "Onbekend")</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="card bg-dark border-secondary p-3 rounded-1 mb-5">
+                        <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Sprint Extra</h5>
+                        @{
+                            var cSprintPole = GetCoureur(Model.FirstOrDefault(x => x.TypeVoorspelling == "SprintPole")?.StartNr);
+                        }
+                        <div>
+                            <label class="text-danger fw-bold small mb-1">Sprint Pole Position</label>
+                            <div class="border border-secondary p-2 rounded-1 d-flex align-items-center" style="background-color: rgba(0,0,0,0.2);">
+                                @if (!magZienSprint)
+                                {
+                                    <span class="fst-italic text-white small opacity-75">Hidden</span>
+                                }
+                                else if (cSprintPole != null)
+                                {
+
+                                    <span class="text-white">@cSprintPole.Startnr | @cSprintPole.Voornaam @cSprintPole.Achternaam <span class="text-secondary mx-1">|</span> @(cSprintPole.Team?.Teamnaam)</span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted">-</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- ================= TAB: SEIZOEN COUREURS ================= -->
+        <div class="tab-pane fade" id="seizoen-coureurs" role="tabpanel">
+            <div class="mx-auto" style="max-width: 500px;">
+                @if (!magZienSeizoen)
+                {
+                    <div class="alert border-warning text-center fw-bold mb-4" style="background-color: rgba(255, 193, 7, 0.1); color: #ffc107;">
+                        <i class="bi bi-lock-fill me-2"></i> Seizoensvoorspellingen zijn verborgen tot de seizoen-start!
+                    </div>
+                }
+
+                <div class="card bg-dark border-secondary p-3 mb-4 rounded-1">
+                    <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Eindstand Coureurs (Top 10)</h5>
+                    @for (int i = 1; i <= 10; i++)
+                    {
+                        var c = GetCoureur(Model.FirstOrDefault(x => x.TypeVoorspelling == $"SeizoenCPos{i}")?.StartNr);
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-danger text-white fw-bold d-flex justify-content-center align-items-center rounded-1" style="width: 40px; height: 40px; min-width: 40px;">@i</div>
+                            <div class="border border-secondary ms-2 flex-grow-1 px-3 py-2 d-flex justify-content-between align-items-center rounded-1" style="background-color: rgba(0,0,0,0.2); height: 40px;">
+                                @if (!magZienSeizoen)
+                                {
+                                    <span class="fst-italic text-white small opacity-75"><i class="bi bi-eye-slash-fill me-1"></i> Hidden</span>
+                                }
+                                else if (c != null)
+                                {
+                                    <div><span class="text-danger fw-bold me-3">@c.Startnr</span><span class="text-white fw-bold">@c.Voornaam @c.Achternaam</span></div>
+                                    <span class="text-secondary small d-none d-sm-block">@(c.Team?.Teamnaam)</span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted small">-</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="card bg-dark border-secondary p-3 rounded-1 mb-5">
+                    <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Seizoen Extra (Coureurs)</h5>
+
+                    @{
+                        string[] extraVragen = { "MeesteRaceWinst", "MeesteSprintWinst", "MeesteRacePoles", "MeesteSprintPoles" };
+                        string[] extraLabels = { "Meeste Race Overwinningen", "Meeste Sprint Overwinningen", "Meeste Pole Positions", "Meeste Sprint Poles" };
+                    }
+
+                    @for (int i = 0; i < extraVragen.Length; i++)
+                    {
+                        var cExtra = GetCoureur(Model.FirstOrDefault(x => x.TypeVoorspelling == extraVragen[i])?.StartNr);
+                        <div class="mb-3">
+                            <label class="text-danger fw-bold small mb-1">@extraLabels[i]</label>
+                            <div class="border border-secondary p-2 rounded-1 d-flex align-items-center" style="background-color: rgba(0,0,0,0.2);">
+                                @if (!magZienSeizoen)
+                                {
+                                    <span class="fst-italic text-white small opacity-75">Hidden</span>
+                                }
+                                else if (cExtra != null)
+                                {
+
+                                    <span class="text-white">@cExtra.Startnr | @cExtra.Voornaam @cExtra.Achternaam</span>
+                                }
+                                else
+                                {
+
+                                    <span class="text-muted">-</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB: SEIZOEN TEAMS ================= -->
+        <div class="tab-pane fade" id="seizoen-teams" role="tabpanel">
+            <div class="mx-auto" style="max-width: 500px;">
+                @if (!magZienSeizoen)
+                {
+                    <div class="alert border-warning text-center fw-bold mb-4" style="background-color: rgba(255, 193, 7, 0.1); color: #ffc107;">
+                        <i class="bi bi-lock-fill me-2"></i> Seizoensvoorspellingen zijn verborgen tot de seizoen-start!
+                    </div>
+                }
+
+                <div class="card bg-dark border-secondary p-3 mb-4 rounded-1">
+                    <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Eindstand Teams</h5>
+                    @for (int i = 1; i <= 11; i++) // 11 in geval er in de toekomst extra teams bijkomen, afhankelijk van jouw datamodel
+                    {
+                        var teamVoorspelling = Model.FirstOrDefault(x => x.TypeVoorspelling == $"SeizoenTPos{i}");
+                        var t = GetTeam(teamVoorspelling?.TeamId);
+
+                        // We tonen het blokje alleen als er daadwerkelijk een voorspelling is of we verplichten er bijv. 10.
+                        if (!magZienSeizoen || t != null || i <= 10)
+                        {
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-danger text-white fw-bold d-flex justify-content-center align-items-center rounded-1" style="width: 40px; height: 40px; min-width: 40px;">@i</div>
+                                <div class="border border-secondary ms-2 flex-grow-1 px-3 py-2 d-flex justify-content-between align-items-center rounded-1" style="background-color: rgba(0,0,0,0.2); height: 40px;">
+                                    @if (!magZienSeizoen)
+                                    {
+                                        <span class="fst-italic text-white small opacity-75"><i class="bi bi-eye-slash-fill me-1"></i> Hidden</span>
+                                    }
+                                    else if (t != null)
+                                    {
+
+                                        <span class="text-white fw-bold">@t.Teamnaam</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Dit zorgt ervoor dat wanneer je op een tab klikt, alle andere tabs netjes deselecteren
+    document.querySelectorAll('.nav-link').forEach(tab => {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.nav-link').forEach(t => {
+                t.classList.remove('bg-danger', 'border-danger');
+                t.classList.add('bg-dark', 'border-secondary');
+            });
+            this.classList.remove('bg-dark', 'border-secondary');
+            this.classList.add('bg-danger', 'border-danger');
+        });
+    });
+</script>
