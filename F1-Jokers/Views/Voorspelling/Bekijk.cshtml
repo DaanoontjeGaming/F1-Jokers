@@ -254,30 +254,35 @@
                 }
 
                 <div class="card bg-dark border-secondary p-3 mb-4 rounded-1">
-                    <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Eindstand Coureurs (Top 10)</h5>
-                    @for (int i = 1; i <= 10; i++)
-                    {
-                        var c = GetCoureur(Model.FirstOrDefault(x => x.TypeVoorspelling == $"SeizoenCPos{i}")?.StartNr);
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-danger text-white fw-bold d-flex justify-content-center align-items-center rounded-1" style="width: 40px; height: 40px; min-width: 40px;">@i</div>
-                            <div class="border border-secondary ms-2 flex-grow-1 px-3 py-2 d-flex justify-content-between align-items-center rounded-1" style="background-color: rgba(0,0,0,0.2); height: 40px;">
-                                @if (!magZienSeizoen)
-                                {
-                                    <span class="fst-italic text-white small opacity-75"><i class="bi bi-eye-slash-fill me-1"></i> Hidden</span>
-                                }
-                                else if (c != null)
-                                {
-                                    <div><span class="text-danger fw-bold me-3">@c.Startnr</span><span class="text-white fw-bold">@c.Voornaam @c.Achternaam</span></div>
-                                    <span class="text-secondary small d-none d-sm-block">@(c.Team?.Teamnaam)</span>
-                                }
-                                else
-                                {
+                    <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Eindstand Coureurs</h5>
 
-                                    <span class="text-muted small">-</span>
-                                }
+                    <!-- DIT IS DE NIEUWE SCROLLBARE CONTAINER (Met plek voor ~10 items tegelijk) -->
+                    <div style="max-height: 480px; overflow-y: auto; overflow-x: hidden;" class="pe-2 custom-f1-scrollbar">
+                        <!-- DE LOOP IS AANGEPAST NAAR 22 COUREURS -->
+                        @for (int i = 1; i <= 22; i++)
+                        {
+                            var c = GetCoureur(Model.FirstOrDefault(x => x.TypeVoorspelling == $"SeizoenCPos{i}")?.StartNr);
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="bg-danger text-white fw-bold d-flex justify-content-center align-items-center rounded-1" style="width: 40px; height: 40px; min-width: 40px;">@i</div>
+                                <div class="border border-secondary ms-2 flex-grow-1 px-3 py-2 d-flex justify-content-between align-items-center rounded-1" style="background-color: rgba(0,0,0,0.2); height: 40px;">
+                                    @if (!magZienSeizoen)
+                                    {
+                                        <span class="fst-italic text-white small opacity-75"><i class="bi bi-eye-slash-fill me-1"></i> Hidden</span>
+                                    }
+                                    else if (c != null)
+                                    {
+                                        <div><span class="text-danger fw-bold me-3" style="width: 20px; display: inline-block;">@c.Startnr</span><span class="text-white fw-bold">@c.Voornaam @c.Achternaam</span></div>
+                                        <span class="text-secondary small d-none d-sm-block">@(c.Team?.Teamnaam)</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 </div>
 
                 <div class="card bg-dark border-secondary p-3 rounded-1 mb-5">
@@ -327,12 +332,11 @@
 
                 <div class="card bg-dark border-secondary p-3 mb-4 rounded-1">
                     <h5 class="text-white fw-bold text-uppercase border-bottom border-danger pb-2 mb-3">Eindstand Teams</h5>
-                    @for (int i = 1; i <= 11; i++) // 11 in geval er in de toekomst extra teams bijkomen, afhankelijk van jouw datamodel
+                    @for (int i = 1; i <= 11; i++) // Afhankelijk van de database kun je deze ook verhogen naar 11 of 12!
                     {
                         var teamVoorspelling = Model.FirstOrDefault(x => x.TypeVoorspelling == $"SeizoenTPos{i}");
                         var t = GetTeam(teamVoorspelling?.TeamId);
 
-                        // We tonen het blokje alleen als er daadwerkelijk een voorspelling is of we verplichten er bijv. 10.
                         if (!magZienSeizoen || t != null || i <= 10)
                         {
                             <div class="d-flex align-items-center mb-2">
@@ -364,7 +368,7 @@
 </div>
 
 <script>
-    // Dit zorgt ervoor dat wanneer je op een tab klikt, alle andere tabs netjes deselecteren
+    // Tab navigatie functionaliteit
     document.querySelectorAll('.nav-link').forEach(tab => {
         tab.addEventListener('click', function () {
             document.querySelectorAll('.nav-link').forEach(t => {
@@ -376,3 +380,24 @@
         });
     });
 </script>
+
+<style>
+    /* Custom styling om de scrollbar netjes in het dark theme te laten passen */
+    .custom-f1-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .custom-f1-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+    }
+
+    .custom-f1-scrollbar::-webkit-scrollbar-thumb {
+        background: #495057;
+        border-radius: 4px;
+    }
+
+        .custom-f1-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #dc3545; /* Rood als je er met de muis over gaat */
+        }
+</style>
