@@ -203,20 +203,28 @@ html body .hide-section {
     font-weight: bold;
 }
 
+/* =========================================
+   AANGEPASTE DROP-TARGET STYLING
+   ========================================= */
 .drop-target {
     flex-grow: 1;
     background-color: var(--f1-slot-bg);
     border: 1px dashed #555;
-    min-height: 50px;
+    min-height: 40px;
     display: flex;
     align-items: center;
-    padding-left: 10px;
+    padding: 0 10px;
 }
 
     .drop-target .driver-card, .drop-target .team-card {
-        border: none;
+        border: none !important;
+        background-color: transparent !important;
+        padding: 0 !important;
+        margin-bottom: 0 !important;
         width: 100%;
-        margin-bottom: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
     }
 
 @media (min-width: 768px) {
@@ -314,14 +322,12 @@ footer {
    POULE RANGLIJST MOBIELE FIX
    ========================================= */
 @media (max-width: 575.98px) {
-    /* Maak de padding kleiner en de tekst een fractie kleiner */
     .poule-table th,
     .poule-table td {
         padding: 0.5rem 0.25rem !important;
         font-size: 0.85rem !important;
     }
 
-    /* Voorkom dat de (+X) punten en de trofee te groot zijn op mobiel */
     .poule-table .fs-5 {
         font-size: 1rem !important;
     }
@@ -330,9 +336,8 @@ footer {
         font-size: 1.1rem !important;
     }
 
-    /* Breek lange gebruikersnamen netjes af om oprekken te voorkomen */
     .username-truncate {
-        max-width: 95px; /* Perfect voor Galaxy S20 formaat */
+        max-width: 95px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -340,3 +345,24 @@ footer {
         vertical-align: middle;
     }
 }
+
+/* =========================================
+   CUSTOM SCROLLBAR
+   ========================================= */
+.custom-f1-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-f1-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.custom-f1-scrollbar::-webkit-scrollbar-thumb {
+    background: #495057;
+    border-radius: 4px;
+}
+
+    .custom-f1-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #dc3545;
+    }
