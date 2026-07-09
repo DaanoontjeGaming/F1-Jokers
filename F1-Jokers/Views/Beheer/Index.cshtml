@@ -1,4 +1,5 @@
 ﻿@model dynamic
+@inject F1Jokers.Data.AppDbContext DbContext
 
 @{
     ViewData["Title"] = "Controlepaneel Beheer";
@@ -64,7 +65,10 @@
                                 <option value="">-- Kies een race --</option>
                                 @foreach (var race in kalenderLijst)
                                 {
-                                    <option value="@race.RaceID">@race.Racenaam @(race.IsVerwerkt ? "(Al verwerkt)" : "")</option>
+                                    // Controleer direct en keihard in de database of er voor deze race al uitslagen geregistreerd zijn
+                                    bool isEchtVerwerkt = DbContext.Uitslagen.Any(u => u.RaceID == race.RaceID);
+
+                                    <option value="@race.RaceID">@race.Racenaam @(isEchtVerwerkt ? "(Al verwerkt)" : "")</option>
                                 }
                             </select>
                         </div>
@@ -154,5 +158,4 @@
             </form>
         </div>
     </div>
-
 </div>

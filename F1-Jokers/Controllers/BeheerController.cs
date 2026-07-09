@@ -27,9 +27,11 @@ namespace F1Jokers.Controllers
 
         public IActionResult Index()
         {
+            // --- AANGEPAST: Robuuste sortering op het officiële numerieke RaceID ---
             var kalender = _context.Kalender
                 .Where(k => !k.RaceID.StartsWith("Seizoen") && !k.RaceID.EndsWith("S"))
-                .OrderBy(k => k.Deadline)
+                .ToList() // Haal eerst op naar het geheugen
+                .OrderBy(k => int.TryParse(k.RaceID, out int id) ? id : 9999) // Sorteer numeriek
                 .ToList();
 
             ViewBag.KalenderLijst = kalender;
