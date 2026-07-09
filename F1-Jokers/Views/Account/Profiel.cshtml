@@ -1,0 +1,118 @@
+﻿@model F1Jokers.Models.ProfielViewModel
+
+@{
+    ViewData["Title"] = "Mijn Profiel";
+}
+
+<div class="container py-4">
+    <!-- HEADER -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 text-white fw-bold text-uppercase" style="letter-spacing: 1px;">
+            <i class="bi bi-person-bounding-box text-danger me-2"></i> Mijn <span class="text-danger">Profiel</span>
+        </h1>
+        <p class="text-light opacity-75">Beheer je account, persoonlijke voorkeuren en bekijk je statistieken.</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success bg-dark border-success text-success fw-bold text-center mb-4 mx-auto" style="max-width: 600px;">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="row g-4 justify-content-center">
+
+        <!-- STATISTIEKEN DASHBOARD -->
+        <div class="col-12 col-lg-10">
+            <div class="row g-3 text-center mb-2">
+                <div class="col-md-4">
+                    <div class="card bg-dark border-secondary shadow-sm py-3 h-100">
+                        <div class="text-danger mb-2"><i class="bi bi-trophy-fill fs-3"></i></div>
+                        <h3 class="text-white fw-bold mb-0">@ViewBag.TotalePunten</h3>
+                        <div class="text-secondary small text-uppercase fw-bold mt-1">Totale Punten</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-dark border-secondary shadow-sm py-3 h-100">
+                        <div class="text-warning mb-2"><i class="bi bi-award-fill fs-3"></i></div>
+                        <h3 class="text-white fw-bold mb-0">@ViewBag.HuidigeStand</h3>
+                        <div class="text-secondary small text-uppercase fw-bold mt-1">Huidige Stand</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-dark border-secondary shadow-sm py-3 h-100">
+                        <div class="mb-2 d-flex justify-content-center align-items-center" style="height: 32px;">
+                            <img src="/images/Champagne.png" alt="Champagnefles" style="height: 38px; width: auto; object-fit: contain;" />
+                        </div>
+                        <h3 class="text-white fw-bold mb-0">@ViewBag.Champagne</h3>
+                        <div class="text-secondary small text-uppercase fw-bold mt-1">Champagneflessen</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-10">
+            <form asp-action="Profiel" method="post" class="row g-4">
+
+                <!-- ACCOUNTGEGEVENS -->
+                <div class="col-12 col-md-6">
+                    <div class="card bg-dark border-secondary h-100 shadow-sm">
+                        <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                            <i class="bi bi-person-vcard text-danger me-2"></i> Accountgegevens
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="mb-3">
+                                <label asp-for="Username" class="text-danger small fw-bold d-block mb-1">Gebruikersnaam</label>
+                                <input asp-for="Username" class="form-control bg-dark text-white border-secondary" placeholder="Jouw gebruikersnaam..." />
+                                <span asp-validation-for="Username" class="text-danger small mt-1 d-block fw-bold"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Email" class="text-danger small fw-bold d-block mb-1">E-mailadres</label>
+                                <input asp-for="Email" class="form-control bg-dark text-white border-secondary" placeholder="Jouw e-mailadres..." />
+                                <span asp-validation-for="Email" class="text-danger small mt-1 d-block fw-bold"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WACHTWOORD WIJZIGEN -->
+                <div class="col-12 col-md-6">
+                    <div class="card bg-dark border-secondary h-100 shadow-sm">
+                        <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                            <i class="bi bi-shield-lock text-danger me-2"></i> Beveiliging
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="mb-3">
+                                <label asp-for="HuidigWachtwoord" class="text-secondary small mb-1">Huidig Wachtwoord</label>
+                                <input asp-for="HuidigWachtwoord" type="password" class="form-control bg-dark text-white border-secondary" placeholder="Huidig wachtwoord..." />
+                                <span asp-validation-for="HuidigWachtwoord" class="text-danger small mt-1 d-block fw-bold"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="NieuwWachtwoord" class="text-danger small fw-bold d-block mb-1">Nieuw Wachtwoord</label>
+                                <input asp-for="NieuwWachtwoord" type="password" class="form-control bg-dark text-white border-secondary" placeholder="Nieuw wachtwoord..." />
+                                <span asp-validation-for="NieuwWachtwoord" class="text-danger small mt-1 d-block fw-bold"></span>
+                            </div>
+                            <div class="mb-4">
+                                <label asp-for="BevestigNieuwWachtwoord" class="text-danger small fw-bold d-block mb-1">Bevestig Wachtwoord</label>
+                                <input asp-for="BevestigNieuwWachtwoord" type="password" class="form-control bg-dark text-white border-secondary" placeholder="Herhaal nieuw wachtwoord..." />
+                                <span asp-validation-for="BevestigNieuwWachtwoord" class="text-danger small mt-1 d-block fw-bold"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SAVE BUTTON -->
+                <div class="col-12 mt-4 text-center">
+                    <button type="submit" class="btn btn-lg btn-danger px-5 py-3 fw-bold shadow">
+                        <i class="bi bi-save2 me-2"></i> WIJZIGINGEN OPSLAAN
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
