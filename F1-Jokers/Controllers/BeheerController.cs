@@ -8,6 +8,7 @@ using F1Jokers.Services;
 using F1Jokers.Data;
 using F1Jokers.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace F1Jokers.Controllers
 {
@@ -27,11 +28,10 @@ namespace F1Jokers.Controllers
 
         public IActionResult Index()
         {
-            // --- AANGEPAST: Robuuste sortering op het officiële numerieke RaceID ---
             var kalender = _context.Kalender
                 .Where(k => !k.RaceID.StartsWith("Seizoen") && !k.RaceID.EndsWith("S"))
-                .ToList() // Haal eerst op naar het geheugen
-                .OrderBy(k => int.TryParse(k.RaceID, out int id) ? id : 9999) // Sorteer numeriek
+                .ToList()
+                .OrderBy(k => int.TryParse(k.RaceID, out int id) ? id : 9999)
                 .ToList();
 
             ViewBag.KalenderLijst = kalender;
@@ -223,6 +223,92 @@ namespace F1Jokers.Controllers
 
             TempData["ErrorMessage"] = "De ingevulde gegevens zijn ongeldig.";
             return View("PuntenInstellingen", parameters);
+        }
+
+        // ==========================================
+        // COUREURS BEHEER
+        // ==========================================
+
+        [HttpGet]
+        public async Task<IActionResult> Coureurs()
+        {
+            var coureurs = await _context.Coureurs
+                .Include(c => c.Team) // Neemt de teamgegevens mee
+                .OrderBy(c => c.Startnr)
+                .ToListAsync();
+
+            // Teams doorgeven voor in de dropdowns bij toevoegen/bewerken
+            ViewBag.Teams = await _context.Teams.ToListAsync();
+
+            return View(coureurs);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VoegCoureurToe(Coureur coureur)
+        {
+            if (await _context.Coureurs.AnyAsync(c => c.Startnr == coureur.Startnr))
+            {
+                TempData["ErrorMessage"] = $"Er bestaat al een coureur met startnummer {coureur.Startnr}.";
+                return RedirectToAction("Coureurs");
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.Coureurs.Add(coureur);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"{coureur.Voornaam} {coureur.Achternaam} is succesvol toegevoegd!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Vul alle verplichte velden correct in.";
+            }
+
+            return RedirectToAction("Coureurs");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BewerkCoureur(Coureur coureur)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Coureurs.Update(coureur);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Coureur #{coureur.Startnr} is succesvol bijgewerkt!";
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["ErrorMessage"] = "Er is een fout opgetreden bij het updaten van de database.";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Ongeldige gegevens ingevoerd.";
+            }
+
+            return RedirectToAction("Coureurs");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerwijderCoureur(int startnr)
+        {
+            var coureur = await _context.Coureurs.FindAsync(startnr);
+            if (coureur != null)
+            {
+                _context.Coureurs.Remove(coureur);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "De coureur is succesvol verwijderd!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Coureur niet gevonden.";
+            }
+
+            return RedirectToAction("Coureurs");
         }
     }
 }
