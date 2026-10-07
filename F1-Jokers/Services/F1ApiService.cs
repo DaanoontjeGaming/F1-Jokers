@@ -152,6 +152,8 @@ namespace F1Jokers.Services
                     }
 
                     var driverStandings = driverLists[0].GetProperty("DriverStandings");
+                    var dbCoureurs = _context.Coureurs.ToList(); // Haal coureurs op om hun punten te updaten
+
                     foreach (var ds in driverStandings.EnumerateArray())
                     {
                         int wkPositie = int.Parse(ds.GetProperty("position").GetString());
@@ -160,7 +162,16 @@ namespace F1Jokers.Services
 
                         if (ds.GetProperty("Driver").TryGetProperty("permanentNumber", out var permNrStr) && int.TryParse(permNrStr.GetString(), out int startnr))
                         {
+                            // 1. Voeg toe aan de specifieke WK standen tabel
                             _context.WKStandCoureurs.Add(new WKStandCoureur { StartNr = startnr, Positie = wkPositie, Punten = wkPunten, Overwinningen = wkWins });
+
+                            // 2. Update direct de DriverPoints in de beheertabel voor coureurs
+                            var dbCoureur = dbCoureurs.FirstOrDefault(c => c.Startnr == startnr);
+                            if (dbCoureur != null)
+                            {
+                                dbCoureur.DriverPoints = wkPunten;
+                                _context.Coureurs.Update(dbCoureur);
+                            }
                         }
                     }
                 }
@@ -197,21 +208,24 @@ namespace F1Jokers.Services
                         string constructorId = constructorNode.TryGetProperty("constructorId", out var cId) ? cId.GetString().ToLower() : "";
 
                         // --- KOGELVRIJE FIX VOOR RACING BULLS ---
+                        Team match = null;
                         if (constructorId == "rb" || apiTeamName.Contains("rb f1") || apiTeamName.Contains("visa"))
                         {
-                            var rbMatch = teamsInDb.FirstOrDefault(t => t.Teamnaam.ToLower().Contains("racing bulls") || t.Teamnaam.ToLower() == "rb");
-                            if (rbMatch != null)
-                            {
-                                _context.WKStandTeams.Add(new WKStandTeam { TeamID = rbMatch.TeamId, Positie = wkPositie, Punten = wkPunten, Overwinningen = wkWins });
-                                continue;
-                            }
+                            match = teamsInDb.FirstOrDefault(t => t.Teamnaam.ToLower().Contains("racing bulls") || t.Teamnaam.ToLower() == "rb");
                         }
-
-                        var match = teamsInDb.FirstOrDefault(t => t.Teamnaam.ToLower().Contains(apiTeamName) || apiTeamName.Contains(t.Teamnaam.ToLower()));
+                        else
+                        {
+                            match = teamsInDb.FirstOrDefault(t => t.Teamnaam.ToLower().Contains(apiTeamName) || apiTeamName.Contains(t.Teamnaam.ToLower()));
+                        }
 
                         if (match != null)
                         {
+                            // 1. Voeg toe aan de specifieke WK standen tabel
                             _context.WKStandTeams.Add(new WKStandTeam { TeamID = match.TeamId, Positie = wkPositie, Punten = wkPunten, Overwinningen = wkWins });
+
+                            // 2. Update direct de TeamPoints in de beheertabel voor teams
+                            match.TeamPoints = wkPunten;
+                            _context.Teams.Update(match);
                         }
                     }
                 }
