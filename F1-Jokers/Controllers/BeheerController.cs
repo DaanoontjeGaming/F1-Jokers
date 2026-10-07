@@ -233,11 +233,10 @@ namespace F1Jokers.Controllers
         public async Task<IActionResult> Coureurs()
         {
             var coureurs = await _context.Coureurs
-                .Include(c => c.Team) // Neemt de teamgegevens mee
+                .Include(c => c.Team)
                 .OrderBy(c => c.Startnr)
                 .ToListAsync();
 
-            // Teams doorgeven voor in de dropdowns bij toevoegen/bewerken
             ViewBag.Teams = await _context.Teams.ToListAsync();
 
             return View(coureurs);
@@ -252,6 +251,9 @@ namespace F1Jokers.Controllers
                 TempData["ErrorMessage"] = $"Er bestaat al een coureur met startnummer {coureur.Startnr}.";
                 return RedirectToAction("Coureurs");
             }
+
+            // Negeer het navigatie-object Team tijdens validatie
+            ModelState.Remove("Team");
 
             if (ModelState.IsValid)
             {
@@ -271,6 +273,9 @@ namespace F1Jokers.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BewerkCoureur(Coureur coureur)
         {
+            // Negeer het navigatie-object Team tijdens validatie
+            ModelState.Remove("Team");
+
             if (ModelState.IsValid)
             {
                 try
