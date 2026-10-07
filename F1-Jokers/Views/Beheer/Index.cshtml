@@ -48,18 +48,35 @@
             </div>
         </div>
 
-        <!-- NIEUW: Coureurs Beheer Blok -->
-        <div class="col-md-12 mb-2">
-            <div class="card bg-dark border-secondary shadow-sm">
+        <!-- Coureurs Beheer Blok (Nu 50% breed) -->
+        <div class="col-md-6 mb-2">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
                 <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
                     <i class="bi bi-people-fill text-danger me-2"></i> Coureurs Beheer
                 </div>
-                <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap">
-                    <p class="text-light opacity-75 small mb-0 w-75">
-                        Beheer de lijst met actieve coureurs. Voeg reserverijders toe, bewerk namen of pas de teamkoppeling aan als een coureur van team wisselt gedurende het seizoen.
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <p class="text-light opacity-75 small mb-4">
+                        Beheer de lijst met actieve coureurs. Voeg reserverijders toe of pas gegevens aan.
                     </p>
-                    <a asp-controller="Beheer" asp-action="Coureurs" class="btn btn-outline-light fw-bold px-4 mt-3 mt-md-0">
+                    <a asp-controller="Beheer" asp-action="Coureurs" class="btn btn-outline-light fw-bold w-100 mt-auto">
                         <i class="bi bi-person-lines-fill me-1"></i> Coureurs Aanpassen
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- NIEUW: Teams Beheer Blok (50% breed) -->
+        <div class="col-md-6 mb-2">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                    <i class="bi bi-car-front-fill text-danger me-2"></i> Teams Beheer
+                </div>
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <p class="text-light opacity-75 small mb-4">
+                        Beheer de lijst met F1 teams. Wijzig teamnamen, motorleveranciers of voeg nieuwe teams toe.
+                    </p>
+                    <a asp-controller="Beheer" asp-action="Teams" class="btn btn-outline-light fw-bold w-100 mt-auto">
+                        <i class="bi bi-list-nested me-1"></i> Teams Aanpassen
                     </a>
                 </div>
             </div>

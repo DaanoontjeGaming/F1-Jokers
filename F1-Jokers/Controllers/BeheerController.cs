@@ -252,7 +252,6 @@ namespace F1Jokers.Controllers
                 return RedirectToAction("Coureurs");
             }
 
-            // Negeer het navigatie-object Team tijdens validatie
             ModelState.Remove("Team");
 
             if (ModelState.IsValid)
@@ -273,7 +272,6 @@ namespace F1Jokers.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BewerkCoureur(Coureur coureur)
         {
-            // Negeer het navigatie-object Team tijdens validatie
             ModelState.Remove("Team");
 
             if (ModelState.IsValid)
@@ -314,6 +312,92 @@ namespace F1Jokers.Controllers
             }
 
             return RedirectToAction("Coureurs");
+        }
+
+        // ==========================================
+        // TEAMS BEHEER
+        // ==========================================
+
+        [HttpGet]
+        public async Task<IActionResult> Teams()
+        {
+            var teams = await _context.Teams
+                .OrderBy(t => t.TeamId)
+                .ToListAsync();
+
+            return View(teams);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VoegTeamToe(Team team)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Teams.Add(team);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Team '{team.Teamnaam}' is succesvol toegevoegd!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Vul alle verplichte velden correct in.";
+            }
+
+            return RedirectToAction("Teams");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BewerkTeam(Team team)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Teams.Update(team);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Team '{team.Teamnaam}' is succesvol bijgewerkt!";
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["ErrorMessage"] = "Er is een fout opgetreden bij het updaten van de database.";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Ongeldige gegevens ingevoerd.";
+            }
+
+            return RedirectToAction("Teams");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerwijderTeam(int teamId)
+        {
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team != null)
+            {
+                // Veiligheidscontrole: Zijn er nog coureurs aan dit team gekoppeld?
+                bool isGekoppeldAanCoureur = await _context.Coureurs.AnyAsync(c => c.TeamId == teamId);
+
+                if (isGekoppeldAanCoureur)
+                {
+                    TempData["ErrorMessage"] = $"Kan '{team.Teamnaam}' niet verwijderen omdat er nog coureurs aan dit team gekoppeld zijn.";
+                }
+                else
+                {
+                    _context.Teams.Remove(team);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Het team is succesvol verwijderd!";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Team niet gevonden.";
+            }
+
+            return RedirectToAction("Teams");
         }
     }
 }
