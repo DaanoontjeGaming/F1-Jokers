@@ -25,8 +25,24 @@ namespace F1Jokers.Services
 
             if (!uitslagen.Any() || !voorspellingen.Any()) return;
 
-            var top10StartNrs = uitslagen.Where(u => u.TypeResultaat.StartsWith("RacePos") && u.StartNr.HasValue).Select(u => u.StartNr.Value).ToList();
-            var top5SprintStartNrs = uitslagen.Where(u => u.TypeResultaat.StartsWith("SprintPos") && u.StartNr.HasValue).Select(u => u.StartNr.Value).ToList();
+            // FIX: Controleer of het getal áchter "RacePos" daadwerkelijk tussen de 1 en 10 ligt.
+            // P22 of DNF wordt hierdoor nu keihard afgewezen.
+            var top10StartNrs = uitslagen
+                .Where(u => u.TypeResultaat.StartsWith("RacePos") &&
+                            u.StartNr.HasValue &&
+                            int.TryParse(u.TypeResultaat.Replace("RacePos", ""), out int pos) &&
+                            pos >= 1 && pos <= 10)
+                .Select(u => u.StartNr.Value)
+                .ToList();
+
+            // FIX: Hetzelfde geldt voor de SprintPos, dit mag maximaal positie 5 zijn.
+            var top5SprintStartNrs = uitslagen
+                .Where(u => u.TypeResultaat.StartsWith("SprintPos") &&
+                            u.StartNr.HasValue &&
+                            int.TryParse(u.TypeResultaat.Replace("SprintPos", ""), out int pos) &&
+                            pos >= 1 && pos <= 5)
+                .Select(u => u.StartNr.Value)
+                .ToList();
 
             foreach (var voorspelling in voorspellingen)
             {
@@ -174,7 +190,6 @@ namespace F1Jokers.Services
                         TypeResultaat = kvp.Key
                     };
 
-                    // HIER ZIT DE FIX: TeamID gaat netjes in de TeamId kolom!
                     if (kvp.Key.StartsWith("SeizoenTPos", StringComparison.OrdinalIgnoreCase))
                     {
                         nieuweUitslag.TeamId = kvp.Value;
@@ -203,7 +218,6 @@ namespace F1Jokers.Services
                     {
                         if (voorspelling.TypeVoorspelling.StartsWith("SeizoenTPos", StringComparison.OrdinalIgnoreCase))
                         {
-                            // Nu vergelijken we netjes de TeamId's met elkaar!
                             if (voorspelling.TeamId == matchingUitslag.TeamId || voorspelling.StartNr == matchingUitslag.TeamId)
                             {
                                 voorspelling.BehaaldePunten = puntenPerGoedeVoorspelling;

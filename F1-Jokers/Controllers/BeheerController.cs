@@ -3,8 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using F1Jokers.Services;
 using F1Jokers.Data;
+using F1Jokers.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace F1Jokers.Controllers
 {
@@ -26,7 +30,8 @@ namespace F1Jokers.Controllers
         {
             var kalender = _context.Kalender
                 .Where(k => !k.RaceID.StartsWith("Seizoen") && !k.RaceID.EndsWith("S"))
-                .OrderBy(k => k.Deadline)
+                .ToList()
+                .OrderBy(k => int.TryParse(k.RaceID, out int id) ? id : 9999)
                 .ToList();
 
             ViewBag.KalenderLijst = kalender;
@@ -113,6 +118,286 @@ namespace F1Jokers.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExporteerEindstandCsv()
+        {
+            var gebruikers = await _context.Gebruikers.ToDictionaryAsync(g => g.GebruikerID);
+            var kalender = await _context.Kalender.ToDictionaryAsync(k => k.RaceID);
+            var uitslagen = await _context.Uitslagen.ToListAsync();
+            var voorspellingen = await _context.Voorspellingen.OrderBy(v => v.GebruikerID).ThenBy(v => v.RaceID).ToListAsync();
+
+            var csv = new System.Text.StringBuilder();
+
+            csv.AppendLine("sep=;");
+            csv.AppendLine("Username;Totale Punten;Race ID;Racenaam;Type Voorspelling;Voorspeld StartNr;Voorspeld TeamID;Werkelijke Uitslag StartNr;Werkelijke Uitslag TeamID;Behaalde Punten op Voorspelling");
+
+            foreach (var v in voorspellingen)
+            {
+                var gebruiker = gebruikers.GetValueOrDefault(v.GebruikerID);
+                var race = kalender.GetValueOrDefault(v.RaceID);
+                var uitslag = uitslagen.FirstOrDefault(u => u.RaceID == v.RaceID && u.TypeResultaat == v.TypeVoorspelling);
+
+                var username = gebruiker?.Username ?? "Onbekend";
+                var totalePunten = gebruiker?.GebruikerPoints ?? 0;
+                var raceNaam = race?.Racenaam ?? "Onbekend";
+
+                var voorspeldStartNr = v.StartNr?.ToString() ?? "";
+                var voorspeldTeamId = v.TeamId?.ToString() ?? "";
+
+                var uitslagStartNr = uitslag?.StartNr?.ToString() ?? "";
+                var uitslagTeamId = uitslag?.TeamId?.ToString() ?? "";
+
+                csv.AppendLine($"{username};{totalePunten};{v.RaceID};{raceNaam};{v.TypeVoorspelling};{voorspeldStartNr};{voorspeldTeamId};{uitslagStartNr};{uitslagTeamId};{v.BehaaldePunten}");
+            }
+
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+            string bestandsnaam = $"F1_Jokers_Export_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+
+            return File(bytes, "text/csv", bestandsnaam);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> StartNieuwSeizoen()
+        {
+            try
+            {
+                _context.Voorspellingen.RemoveRange(_context.Voorspellingen);
+                _context.Uitslagen.RemoveRange(_context.Uitslagen);
+
+                _context.Kalender.RemoveRange(_context.Kalender);
+                _context.WKStandCoureurs.RemoveRange(_context.WKStandCoureurs);
+                _context.WKStandTeams.RemoveRange(_context.WKStandTeams);
+
+                var gebruikers = await _context.Gebruikers.ToListAsync();
+                foreach (var gebruiker in gebruikers)
+                {
+                    gebruiker.GebruikerPoints = 0;
+                    gebruiker.Champagne = 0;
+                }
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Het nieuwe seizoen is succesvol geïnitieerd! Alle data is gewist en de standen staan op 0.";
+            }
+            catch (System.Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Er ging iets mis bij het starten van het nieuwe seizoen: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PuntenInstellingen()
+        {
+            var parameters = await _context.PuntenParameters
+                .OrderBy(p => p.PuntenID)
+                .ToListAsync();
+
+            return View(parameters);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OpslaanPuntenInstellingen(List<PuntenParameter> parameters)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.PuntenParameters.UpdateRange(parameters);
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "De puntentelling is succesvol bijgewerkt!";
+                    return RedirectToAction("Index");
+                }
+                catch (System.Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Fout bij het opslaan van de punten: {ex.Message}";
+                    return RedirectToAction("Index");
+                }
+            }
+
+            TempData["ErrorMessage"] = "De ingevulde gegevens zijn ongeldig.";
+            return View("PuntenInstellingen", parameters);
+        }
+
+        // ==========================================
+        // COUREURS BEHEER
+        // ==========================================
+
+        [HttpGet]
+        public async Task<IActionResult> Coureurs()
+        {
+            var coureurs = await _context.Coureurs
+                .Include(c => c.Team)
+                .OrderBy(c => c.Startnr)
+                .ToListAsync();
+
+            ViewBag.Teams = await _context.Teams.ToListAsync();
+
+            return View(coureurs);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VoegCoureurToe(Coureur coureur)
+        {
+            if (await _context.Coureurs.AnyAsync(c => c.Startnr == coureur.Startnr))
+            {
+                TempData["ErrorMessage"] = $"Er bestaat al een coureur met startnummer {coureur.Startnr}.";
+                return RedirectToAction("Coureurs");
+            }
+
+            ModelState.Remove("Team");
+
+            if (ModelState.IsValid)
+            {
+                _context.Coureurs.Add(coureur);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"{coureur.Voornaam} {coureur.Achternaam} is succesvol toegevoegd!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Vul alle verplichte velden correct in.";
+            }
+
+            return RedirectToAction("Coureurs");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BewerkCoureur(Coureur coureur)
+        {
+            ModelState.Remove("Team");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Coureurs.Update(coureur);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Coureur #{coureur.Startnr} is succesvol bijgewerkt!";
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["ErrorMessage"] = "Er is een fout opgetreden bij het updaten van de database.";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Ongeldige gegevens ingevoerd.";
+            }
+
+            return RedirectToAction("Coureurs");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerwijderCoureur(int startnr)
+        {
+            var coureur = await _context.Coureurs.FindAsync(startnr);
+            if (coureur != null)
+            {
+                _context.Coureurs.Remove(coureur);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "De coureur is succesvol verwijderd!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Coureur niet gevonden.";
+            }
+
+            return RedirectToAction("Coureurs");
+        }
+
+        // ==========================================
+        // TEAMS BEHEER
+        // ==========================================
+
+        [HttpGet]
+        public async Task<IActionResult> Teams()
+        {
+            var teams = await _context.Teams
+                .OrderBy(t => t.TeamId)
+                .ToListAsync();
+
+            return View(teams);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VoegTeamToe(Team team)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Teams.Add(team);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Team '{team.Teamnaam}' is succesvol toegevoegd!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Vul alle verplichte velden correct in.";
+            }
+
+            return RedirectToAction("Teams");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BewerkTeam(Team team)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Teams.Update(team);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = $"Team '{team.Teamnaam}' is succesvol bijgewerkt!";
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["ErrorMessage"] = "Er is een fout opgetreden bij het updaten van de database.";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Ongeldige gegevens ingevoerd.";
+            }
+
+            return RedirectToAction("Teams");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerwijderTeam(int teamId)
+        {
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team != null)
+            {
+                // Veiligheidscontrole: Zijn er nog coureurs aan dit team gekoppeld?
+                bool isGekoppeldAanCoureur = await _context.Coureurs.AnyAsync(c => c.TeamId == teamId);
+
+                if (isGekoppeldAanCoureur)
+                {
+                    TempData["ErrorMessage"] = $"Kan '{team.Teamnaam}' niet verwijderen omdat er nog coureurs aan dit team gekoppeld zijn.";
+                }
+                else
+                {
+                    _context.Teams.Remove(team);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Het team is succesvol verwijderd!";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Team niet gevonden.";
+            }
+
+            return RedirectToAction("Teams");
         }
     }
 }

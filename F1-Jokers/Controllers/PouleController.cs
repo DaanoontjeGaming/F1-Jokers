@@ -23,10 +23,11 @@ namespace F1Jokers.Controllers
         // --- Actions ---
         public IActionResult Index(string raceId)
         {
-            // --- AANGEPAST: Filter Seizoen-records én Sprintraces (eindigend op "S") eruit ---
+            // --- AANGEPAST: Robuuste sortering op het officiële numerieke RaceID ---
             var kalender = _context.Kalender
                 .Where(k => !k.RaceID.StartsWith("Seizoen") && !k.RaceID.EndsWith("S"))
-                .OrderBy(k => k.Deadline)
+                .ToList() // Haal eerst op naar het geheugen
+                .OrderBy(k => int.TryParse(k.RaceID, out int id) ? id : 9999) // Sorteer numeriek
                 .ToList();
 
             if (string.IsNullOrEmpty(raceId) && kalender.Any())
@@ -44,7 +45,6 @@ namespace F1Jokers.Controllers
                 .OrderByDescending(g => g.GebruikerPoints)
                 .ToList();
 
-            // De punten van de hoofdrace én de sprintrace worden hier al netjes bij elkaar opgeteld
             var voorspellingenDezeRace = _context.Voorspellingen
                 .Where(v => v.RaceID == raceId || v.RaceID == raceId + "S")
                 .ToList();

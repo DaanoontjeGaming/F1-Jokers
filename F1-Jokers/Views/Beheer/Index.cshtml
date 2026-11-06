@@ -1,4 +1,5 @@
 ﻿@model dynamic
+@inject F1Jokers.Data.AppDbContext DbContext
 
 @{
     ViewData["Title"] = "Controlepaneel Beheer";
@@ -30,6 +31,57 @@
     }
 
     <div class="row g-4">
+
+        <div class="col-md-12 mb-2">
+            <div class="card bg-dark border-secondary shadow-sm">
+                <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                    <i class="bi bi-sliders text-danger me-2"></i> Puntentelling & Reglementen
+                </div>
+                <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap">
+                    <p class="text-light opacity-75 small mb-0 w-75">
+                        Beheer het hart van de applicatie. Wijzig hoeveel punten een gebruiker krijgt voor een perfecte pole position, een snelste ronde of het correct voorspellen van de eindstand.
+                    </p>
+                    <a asp-controller="Beheer" asp-action="PuntenInstellingen" class="btn btn-outline-light fw-bold px-4 mt-3 mt-md-0">
+                        <i class="bi bi-pencil-square me-1"></i> Configuratie Openen
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coureurs Beheer Blok (Nu 50% breed) -->
+        <div class="col-md-6 mb-2">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                    <i class="bi bi-people-fill text-danger me-2"></i> Coureurs Beheer
+                </div>
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <p class="text-light opacity-75 small mb-4">
+                        Beheer de lijst met actieve coureurs. Voeg reserverijders toe of pas gegevens aan.
+                    </p>
+                    <a asp-controller="Beheer" asp-action="Coureurs" class="btn btn-outline-light fw-bold w-100 mt-auto">
+                        <i class="bi bi-person-lines-fill me-1"></i> Coureurs Aanpassen
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- NIEUW: Teams Beheer Blok (50% breed) -->
+        <div class="col-md-6 mb-2">
+            <div class="card bg-dark border-secondary h-100 shadow-sm">
+                <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                    <i class="bi bi-car-front-fill text-danger me-2"></i> Teams Beheer
+                </div>
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <p class="text-light opacity-75 small mb-4">
+                        Beheer de lijst met F1 teams. Wijzig teamnamen, motorleveranciers of voeg nieuwe teams toe.
+                    </p>
+                    <a asp-controller="Beheer" asp-action="Teams" class="btn btn-outline-light fw-bold w-100 mt-auto">
+                        <i class="bi bi-list-nested me-1"></i> Teams Aanpassen
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <div class="col-md-6">
             <div class="card bg-dark border-secondary h-100 shadow-sm">
                 <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
@@ -47,7 +99,9 @@
                                 <option value="">-- Kies een race --</option>
                                 @foreach (var race in kalenderLijst)
                                 {
-                                    <option value="@race.RaceID">@race.Racenaam @(race.IsVerwerkt ? "(Al verwerkt)" : "")</option>
+                                    bool isEchtVerwerkt = DbContext.Uitslagen.Any(u => u.RaceID == race.RaceID);
+
+                                    <option value="@race.RaceID">@race.Racenaam @(isEchtVerwerkt ? "(Al verwerkt)" : "")</option>
                                 }
                             </select>
                         </div>
@@ -84,19 +138,56 @@
         </div>
         <div class="card-body p-4">
             <p class="text-light opacity-75 small mb-4">
-                Vergelijk de langetermijn-seizoensvoorspellingen (Eindstand Coureurs, Eindstand Teams en alle overige winnaars-bonusvragen) met de ingevoerde officiële einduitslag. Elke correcte voorspelling levert de deelnemer 25 punten op.
+                Vergelijk de langetermijn-seizoensvoorspellingen met de ingevoerde officiële einduitslag. Elke correcte voorspelling levert de deelnemer 25 punten op.
                 <strong>Let op: dit wordt berekend voor het huidige seizoen (@DateTime.Now.Year).</strong>
             </p>
 
             <form asp-controller="Beheer" asp-action="BerekenSeizoenBonus" method="post" class="row g-3 align-items-center">
                 @Html.AntiForgeryToken()
-                <input type="hidden" name="seizoenId" value="Seizoen2026" />
+                <input type="hidden" name="seizoenId" value="Seizoen@DateTime.Now.Year" />
 
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-danger fw-bold text-white px-4" onclick="return confirm('Weet je zeker dat je de seizoens-bonuspunten voor @DateTime.Now.Year definitief wilt berekenen? Dit overschrijft de huidige ranglijst-scores.');">
+                    <button type="submit" class="btn btn-danger fw-bold text-white px-4" onclick="return confirm('Weet je zeker dat je de seizoens-bonuspunten voor @DateTime.Now.Year definitief wilt berekenen?');">
                         <i class="bi bi-calculator me-1"></i> Bereken Seizoensbonus @DateTime.Now.Year
                     </button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card bg-dark border-secondary mt-4 shadow-sm">
+        <div class="card-header border-secondary text-white fw-bold text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+            <i class="bi bi-file-earmark-spreadsheet-fill text-danger me-2"></i> Ruwe Data Export (CSV)
+        </div>
+        <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap">
+            <p class="text-light opacity-75 small mb-0 w-75">
+                Genereer een compleet overzicht van alle voorspellingen, gekoppeld aan de gebruikers, actuele uitslagen en de kalender. Ideaal voor data-analyse of archivering in Excel.
+            </p>
+
+            <a asp-controller="Beheer" asp-action="ExporteerEindstandCsv" class="btn btn-success fw-bold px-4 mt-3 mt-md-0">
+                <i class="bi bi-download me-1"></i> Download CSV
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-danger mt-5 shadow-sm" style="background-color: rgba(255, 24, 1, 0.05);">
+        <div class="card-header bg-danger text-white fw-bold text-uppercase">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> Gevaar Zone: Nieuw Seizoen Initiëren
+        </div>
+        <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap">
+            <div class="w-75">
+                <p class="text-light mb-1 fw-bold">Let op: Deze actie is onomkeerbaar!</p>
+                <p class="text-light opacity-75 small mb-0">
+                    Hiermee gooi je de volledige kalender, alle uitslagen, de WK-standen en alle voorspellingen van de deelnemers definitief weg. Daarnaast worden alle verdiende punten en champagneflessen gereset naar 0. (Tip: Exporteer eerst de CSV!)
+                </p>
+            </div>
+
+            <form asp-controller="Beheer" asp-action="StartNieuwSeizoen" method="post" class="mt-3 mt-md-0">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger fw-bold px-4"
+                        onclick="return confirm('Weet je zeker dat je het nieuwe seizoen wilt starten? Alle huidige data gaat verloren!');">
+                    <i class="bi bi-trash3-fill me-1"></i> Start Nieuw Seizoen
+                </button>
             </form>
         </div>
     </div>

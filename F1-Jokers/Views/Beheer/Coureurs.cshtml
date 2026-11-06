@@ -1,0 +1,179 @@
+﻿@model IEnumerable<F1Jokers.Models.Coureur>
+
+@{
+    ViewData["Title"] = "Coureurs Beheren";
+    var teams = ViewBag.Teams as IEnumerable<F1Jokers.Models.Team> ?? new List<F1Jokers.Models.Team>();
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-white fw-bold text-uppercase mb-0"><i class="bi bi-people-fill text-danger me-2"></i> Coureurs Beheer</h1>
+            <p class="text-light opacity-75 mt-1">Voeg nieuwe coureurs toe, bewerk gegevens of verwijder uitvallers.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-light"><i class="bi bi-arrow-left me-1"></i> Terug naar Paneel</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show text-center border-success mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show text-center border-danger mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card bg-dark border-secondary shadow-sm">
+        <div class="card-header border-secondary bg-black d-flex justify-content-between align-items-center p-3">
+            <h5 class="mb-0 text-white fw-bold"><i class="bi bi-list-ul text-danger me-2"></i> Alle F1 Coureurs</h5>
+            <button type="button" class="btn btn-sm btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#voegCoureurToeModal">
+                <i class="bi bi-plus-lg"></i> Coureur Toevoegen
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle">
+                    <thead class="table-secondary text-dark">
+                        <tr>
+                            <th class="ps-4">Startnr</th>
+                            <th>Voornaam</th>
+                            <th>Achternaam</th>
+                            <th>Team</th>
+                            <th>Punten</th>
+                            <th class="text-end pe-4">Acties</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var coureur in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-danger">@coureur.Startnr</td>
+                                <td>@coureur.Voornaam</td>
+                                <td>@coureur.Achternaam</td>
+                                <td>@(coureur.Team?.Teamnaam ?? coureur.TeamId.ToString())</td>
+                                <td>@(coureur.DriverPoints ?? 0)</td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-outline-warning me-1" data-bs-toggle="modal" data-bs-target="#bewerkModal-@coureur.Startnr" title="Bewerken">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+
+                                    <form asp-action="VerwijderCoureur" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="startnr" value="@coureur.Startnr" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Weet je zeker dat je coureur @coureur.Voornaam @coureur.Achternaam wilt verwijderen?');" title="Verwijderen">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+
+                            <!-- MODAL: BEWERKEN -->
+                            <div class="modal fade" id="bewerkModal-@coureur.Startnr" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content bg-dark border-secondary text-white">
+                                        <div class="modal-header border-secondary">
+                                            <h5 class="modal-title fw-bold">Bewerk @coureur.Voornaam @coureur.Achternaam</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form asp-action="BewerkCoureur" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="Startnr" value="@coureur.Startnr" />
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label text-danger small fw-bold">Voornaam</label>
+                                                    <input type="text" name="Voornaam" class="form-control bg-dark text-white border-secondary" value="@coureur.Voornaam" required />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label text-danger small fw-bold">Achternaam</label>
+                                                    <input type="text" name="Achternaam" class="form-control bg-dark text-white border-secondary" value="@coureur.Achternaam" required />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label text-danger small fw-bold">Team</label>
+                                                    <select name="TeamId" class="form-select bg-dark text-white border-secondary" required>
+                                                        @foreach (var t in teams)
+                                                        {
+                                                            if (t.TeamId == coureur.TeamId)
+                                                            {
+                                                                <option value="@t.TeamId" selected>@t.Teamnaam</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@t.TeamId">@t.Teamnaam</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label text-danger small fw-bold">Rijder Punten</label>
+                                                    <input type="number" name="DriverPoints" class="form-control bg-dark text-white border-secondary" value="@coureur.DriverPoints" />
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-secondary">
+                                                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Annuleren</button>
+                                                <button type="submit" class="btn btn-warning fw-bold text-dark"><i class="bi bi-save-fill me-1"></i> Opslaan</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: TOEVOEGEN -->
+<div class="modal fade" id="voegCoureurToeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary text-white">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold text-uppercase"><i class="bi bi-person-plus-fill text-danger me-2"></i> Nieuwe Coureur</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="VoegCoureurToe" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-danger small fw-bold">Startnummer</label>
+                        <input type="number" name="Startnr" class="form-control bg-dark text-white border-secondary" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-danger small fw-bold">Voornaam</label>
+                        <input type="text" name="Voornaam" class="form-control bg-dark text-white border-secondary" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-danger small fw-bold">Achternaam</label>
+                        <input type="text" name="Achternaam" class="form-control bg-dark text-white border-secondary" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-danger small fw-bold">Team</label>
+                        <select name="TeamId" class="form-select bg-dark text-white border-secondary" required>
+                            <option value="">-- Kies een Team --</option>
+                            @foreach (var t in teams)
+                            {
+                                <option value="@t.TeamId">@t.Teamnaam</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-danger small fw-bold">Start Punten (optioneel)</label>
+                        <input type="number" name="DriverPoints" class="form-control bg-dark text-white border-secondary" value="0" />
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Annuleren</button>
+                    <button type="submit" class="btn btn-danger fw-bold"><i class="bi bi-plus-lg me-1"></i> Toevoegen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
