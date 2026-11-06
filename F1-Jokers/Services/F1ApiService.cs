@@ -26,7 +26,7 @@ namespace F1Jokers.Services
 
             if (DateTime.Now.Year == 2026 && int.TryParse(raceId, out int lokaalId) && lokaalId >= 6)
             {
-                apiRound = (lokaalId - 2).ToString();
+                apiRound = (lokaalId - 1).ToString();
             }
 
             var resultsResponse = await _httpClient.GetStringAsync($"https://api.jolpi.ca/ergast/f1/current/{apiRound}/results.json");
