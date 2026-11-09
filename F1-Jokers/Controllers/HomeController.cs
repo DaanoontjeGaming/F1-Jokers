@@ -28,9 +28,8 @@ namespace F1Jokers.Controllers
 
             var coureursDb = await _context.Coureurs.ToListAsync();
 
-            var wkCoureurs = await _context.WKStandCoureurs.OrderBy(w => w.Positie).Take(22).ToListAsync();
-
-            
+            // De .Take(22) is hier verwijderd zodat alle coureurs worden getoond
+            var wkCoureurs = await _context.WKStandCoureurs.OrderBy(w => w.Positie).ToListAsync();
 
             var teamsDb = await _context.Teams.ToListAsync();
             var wkTeams = await _context.WKStandTeams.OrderBy(w => w.Positie).ToListAsync();
